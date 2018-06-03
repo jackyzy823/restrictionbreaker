@@ -1,0 +1,17 @@
+1.Abema android v3.24.1
+
+see
+tv.abema.i.a.g
+        this.baseDataSourceFactory = new OkHttpDataSourceFactory(this.giS, this.egz.bgn(), transferListener);
+
+        should add  this.baseBdataSourceFactory.setRequestProperty("X-Forwarded-For","")
+
+for exoplayers add header (maybe)
+
+2.TVer.jp
+    a. cue_poiner
+    b. custom_fields -> advmapurl
+    
+    See Video class
+    etc: video.getCuePoints().add(0, newCuePoint);
+
