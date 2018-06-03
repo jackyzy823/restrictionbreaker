@@ -1,0 +1,22 @@
+{
+
+  "manifest_version": 2,
+  "name": "tver.unblock",
+  "version": "0.1",
+
+  "description": "A tool for unblocking TVer.jp geolocation restriction.",
+
+  "permissions": [
+      "activeTab",
+      "webRequest",
+      "webRequestBlocking",
+      "*://*.api.brightcove.com/*",
+      "*://linear-abematv.akamaized.net/*",
+      "*://abematv.akamaized.net/*"
+  ],
+  "background": {
+    "scripts": ["background.js"]
+
+  }
+
+}
