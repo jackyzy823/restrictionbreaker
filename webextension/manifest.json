@@ -1,10 +1,10 @@
 {
 
   "manifest_version": 2,
-  "name": "tver.unblock",
+  "name": "Restriction Breaker",
   "version": "0.1",
 
-  "description": "A tool for unblocking TVer.jp geolocation restriction.",
+  "description": "A tool for unblocking TVer.jp and abema.tv geolocation restriction.",
 
   "permissions": [
       "activeTab",
