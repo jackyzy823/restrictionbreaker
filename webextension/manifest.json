@@ -10,7 +10,10 @@
       "activeTab",
       "webRequest",
       "webRequestBlocking",
+      "cookies",
       "*://*.api.brightcove.com/*",
+      "*://*.stream.ne.jp/*",
+      "*://*.fod.fujitv.co.jp/*",
       "*://linear-abematv.akamaized.net/*",
       "*://abematv.akamaized.net/*"
   ],

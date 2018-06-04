@@ -15,3 +15,27 @@ for exoplayers add header (maybe)
     See Video class
     etc: video.getCuePoints().add(0, newCuePoint);
 
+3. FOD
+fod.fujitv.co.jp ->
+
+tver.jp/cx
+
+#09
+url:http://fod.fujitv.co.jp/s/genre/drama/ser4f07/4f07810009/
+to :https://i.fod.fujitv.co.jp/plus7/web/4f07/4f07810009.html
+inner
+#guess lbt low bitrate?
+url: "https://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plus7/phls/video/01234/4f07/4f07810009" + meta + "910b.mp4.m3u8",
+ var meta = ''; if( lbt=='1' ){meta = 'me111';} else {meta = 'me113';}
+
+get -> 
+https://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plus7/phls/video/01234/4f07/4f07810009me113910b.mp4.m3u8
+
+guess:
+01234 ? dont know see 56789
+4f07 -> serial drama number
+81 -> muryou 11 -> premium
+0009 -> esp
+.... -> mp4 name (should guess)
+# 08 
+https://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plus7/phls/video/01234/4f07/4f07810008me113e028.mp4.m3u8
