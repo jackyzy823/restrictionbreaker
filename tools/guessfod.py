@@ -43,7 +43,8 @@ def worker2(a):
 
 		s.close()
 
-
+# ulimit open file -> increse statck
+# stack size -> decrese
 p = Pool(36*36)
 res = p.imap_unordered(worker2,product(string.lowercase+string.digits,repeat=2))
 for i in res:
