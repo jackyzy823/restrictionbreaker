@@ -29,14 +29,18 @@ def worker2(a):
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((addr, 80))
 		for v in product(string.lowercase+string.digits,repeat=2):
-			s.sendall("HEAD /www08/fod-plus7/phls/video/01234/4f07/4f07810006me113%s%s%s%s.mp4.m3u8 HTTP/1.1\r\nConnection:Keep-Alive\r\nHost:136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp\r\n\r\n"%(a[0],a[1],v[0],v[1]))
+			s.sendall("HEAD /www08/fod-plus7/phls/video/01234/4f07/4f07810001me113%s%s%s%s.mp4.m3u8 HTTP/1.1\r\nConnection:Keep-Alive\r\nHost:136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp\r\n\r\n"%(a[0],a[1],v[0],v[1]))
 			data = s.recv(1024)
-			if data[9:12] != '404':
+			if data[9:12] != '404' and data[9:12] == '200':
 				print "%s%s%s%s"%(a[0],a[1],v[0],v[1])
 				print "end ",time.time()
 				print "dur ",time.time() - start
+				#TODO change to poolmanager event wait
 				p.close()
 				p.terminate()
+			elif data[9:12] != '404':
+				print "stauscode: %s"%(data[9:12])
+
 		s.close()
 
 
