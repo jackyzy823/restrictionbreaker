@@ -39,3 +39,9 @@ guess:
 .... -> mp4 name (should guess)
 # 08 
 https://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plus7/phls/video/01234/4f07/4f07810008me113e028.mp4.m3u8
+
+#06
+http://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plus7/phls/video/01234/4f07/4f07810006me113caa4.mp4.m3u8
+
+#05
+http://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plus7/phls/video/01234/4f07/4f07810005me11348c4.mp4.m3u8
