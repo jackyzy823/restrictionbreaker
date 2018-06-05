@@ -7,10 +7,10 @@ start = time.time()
 print "start ",start
 
 import socket
+letters = string.lowercase+string.digits
 
 
-
-from multiprocessing.dummy import Pool
+from multiprocessing.dummy import Pool,Manager
 
 # s =requests.session()#for reuse http connection
 # adapter = requests.adapters.HTTPAdapter(pool_connections=SIZE, pool_maxsize=SIZE)
@@ -24,7 +24,7 @@ def worker(a):
         print '%s%s%s%s.mp4.m3u8'%a
         print "find ",time.time()
 
-def worker2(a):
+def worker2(a,evt):
 		addr = ["202.247.51.61","202.247.51.62","202.247.51.70","202.247.51.71"][(ord(a[0])+ord(a[1]))%4]
 		s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		s.connect((addr, 80))
@@ -36,8 +36,7 @@ def worker2(a):
 				print "end ",time.time()
 				print "dur ",time.time() - start
 				#TODO change to poolmanager event wait
-				p.close()
-				p.terminate()
+                                evt.set()
 			elif data[9:12] != '404':
 				print "stauscode: %s"%(data[9:12])
 
@@ -45,7 +44,15 @@ def worker2(a):
 
 # ulimit open file -> increse statck
 # stack size -> decrese
-p = Pool(36*36)
-res = p.imap_unordered(worker2,product(string.lowercase+string.digits,repeat=2))
-for i in res:
-    pass
+p = Pool(36*36*2)
+m = Manager()
+evt = m.Event()
+for i in product(string.lowercase+string.digits,string.lowercase+string.digits,[0,1]):
+    p.apply_async(worker2,(i,evt))
+
+p.close()
+evt.wait()
+p.terminate()
+#res = p.imap_unordered(worker2,product(string.lowercase+string.digits,repeat=2))
+#for i in res:
+#    pass
