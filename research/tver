@@ -1,0 +1,42 @@
+1. fod (aka cx) use its own player
+2. use cue_point and vast to play ad
+3. use brightcove cdn ,bypass by x-forwarded-for
+
+
+https://tver.jp/corner/f0020625
+addPlayer(
+                        '4031511847001', playerid account id
+                        'BklWUbEXTb', player key
+                        'f0020625', catchupid
+                        '4031511847001',
+                        'hana_hare-169-008',
+                        '花のち晴れ～花男 Next Season～',
+                        ' 第8話',
+                        'tbs',
+                        'TBS FREE',
+                        true,
+                        0
+
+tver.js
+function addPlayer( player_id, player_key, catchup_id, publisher_id, reference_id, title, sub_title, service, service_name, sceneshare_enabled, share_start ){
+
+
+html += 'data-video-id="'+(service != 'tx' && service != 'gorin' ? 'ref:' : '')+reference_id+'" ';
+
+$.getScript("//players.brightcove.net/"+player_id+"/"+player_key+"_default/index.min.js", function(){
+
+https://players.brightcove.net/4031511847001/BklWUbEXTb_default/index.min.js?_=1528349207478:formatted
+
+                a.catalog({
+                    accountId: "4031511847001",
+                    policyKey: "BCpkADawqM2N0e6IdrmQn-kEZJ0jRi-Dlm0aUZ9mVF2lcadunJzMVYD6j_51UZzQ3mXuIeV8Zx_UUvbGeeJn73SSrpm0xD7qtiKULPP2NEsp_rgKoVxVWTNZAHN-JAHcuIpFJT7PvUj6gpZv"
+                });
+
+
+accept : pk=plicykey or android mode BCOV-POLICY
+
+policy key is constant in andorid
+https://edge.api.brightcove.com/playback/v1/accounts/4031511847001/videos/ref:hana_hare-169-008
+Accept: application/json;pk=BCpkADawqM2N0e6IdrmQn-kEZJ0jRi-Dlm0aUZ9mVF2lcadunJzMVYD6j_51UZzQ3mXuIeV8Zx_UUvbGeeJn73SSrpm0xD7qtiKULPP2NEsp_rgKoVxVWTNZAHN-JAHcuIpFJT7PvUj6gpZv
+
+
