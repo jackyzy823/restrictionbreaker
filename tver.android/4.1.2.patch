@@ -1,0 +1,17 @@
+diff --git a/smali/com/brightcove/player/edge/EdgeTask.smali b/smali/com/brightcove/player/edge/EdgeTask.smali
+index 1f53af6..8857d34 100644
+--- a/smali/com/brightcove/player/edge/EdgeTask.smali
++++ b/smali/com/brightcove/player/edge/EdgeTask.smali
+@@ -2576,6 +2576,12 @@
+ 
+     invoke-interface {v2, v3, v4}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
+ 
++    const-string/jumbo v3, "X-Forwarded-For"
++
++    const-string/jumbo v4, "1.0.16.0"
++
++    invoke-interface {v2, v3, v4}, Ljava/util/Map;->put(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;
++
+     .line 149
+     iget-object v3, p0, Lcom/brightcove/player/edge/EdgeTask;->options:Ljava/util/Map;
+ 

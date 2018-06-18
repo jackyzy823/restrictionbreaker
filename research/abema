@@ -1,2 +1,6 @@
 1. use akami cdn ,bypass by X-forwarded-for
 2. live ,no past video
+
+
+    '''https://abematv.akamaized.net/region --> 403 xml Access Denied'''
+    '''https://api.abema.io/v1/ip/check  --> 403 {}''' 

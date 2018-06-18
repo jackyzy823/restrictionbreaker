@@ -20,6 +20,25 @@ fod.fujitv.co.jp ->
 
 tver.jp/cx
 
+fod.fujitv.co.jp/s/genre/drama/ser4c00/4c00110001/ -> no html req
+
+find another 
+https://i.fod.fujitv.co.jp/fujitvplus/player_html/web/4931/4931110001/4931110001.html  (player_s.js)
+    fod_plusfujitv.create({ ser: "4931110001", hp: 470, wp: 720, lbt:0}, 'fod', 'fod_player', '', 'on');
+https://i.fod.fujitv.co.jp/plus7/web/4f07/4f07810009.html (player_ep.js)
+    fod_plus7.create({ ser: "4f09810009", hp: 470, wp: 720, bh: 30, qf: 1, lbt:0 }, 'fod', '3', 'fod_player');
+
+#10 (new kind of link?)
+
+https://i.fod.fujitv.co.jp/plus7/web/4f07/4f07810010.html
+https://fod-plus7.hls.wseod.stream.ne.jp/www08/fod-plus7/_definst_/mp4:video/01234/4f07/4f07810010me113d920.mp4/playlist.m3u8
+
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-STREAM-INF:BANDWIDTH=4847903
+chunklist.m3u8
+
+
 #09
 url:http://fod.fujitv.co.jp/s/genre/drama/ser4f07/4f07810009/
 to :https://i.fod.fujitv.co.jp/plus7/web/4f07/4f07810009.html
@@ -31,12 +50,16 @@ url: "https://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plu
 get -> 
 https://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plus7/phls/video/01234/4f07/4f07810009me113910b.mp4.m3u8
 
+
 guess:
 01234 ? dont know see 56789
 4f07 -> serial drama number
 81 -> muryou 11 -> premium
 0009 -> esp
 .... -> mp4 name (should guess)
+
+
+
 # 08 
 https://136ea006abc838d0070ae4bde485da88.cdnext.stream.ne.jp/www08/fod-plus7/phls/video/01234/4f07/4f07810008me113e028.mp4.m3u8
 
