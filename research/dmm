@@ -1,0 +1,5 @@
+dmm
+http://www.dmm.co.jp/digital/videoa/-/detail/ajax-movie/=/cid=abcd00000/ -> iframe   http://www.dmm.co.jp/service/-/html5_player/=/cid=abcd00000/service=digital/floor=videoa/mode=/  (this cannot xforward) --> video page &url
+
+but   
+http://cc3001.dmm.co.jp//litevideo//freepv//a//abc//abcd00000//abcd00000_sm_w.mp4  (no need forward)

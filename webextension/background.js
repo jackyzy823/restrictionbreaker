@@ -7,7 +7,21 @@ chrome.webRequest.onBeforeSendHeaders.addListener(function(req){
     requestHeaders:req.requestHeaders
   }
 },
-{urls:["*://*.api.brightcove.com/playback/*","*://abematv.akamaized.net/region*","*://linear-abematv.akamaized.net/*"]},["blocking","requestHeaders"])
+{urls:["*://*.dmm.co.jp/*","*://*.api.brightcove.com/playback/*","*://abematv.akamaized.net/region*","*://linear-abematv.akamaized.net/*"]},["blocking","requestHeaders"])
+/*
+DMM preview does not work http://www.dmm.co.jp/service/-/html5_player/=/cid= /mtype=AhRVShI_/service=digital/floor=videoa/mode=/
+
+*/
+
+/*
+Abema resolution
+https://linear-abematv.akamaized.net/channel/anime-live/720/playlist.m3u8
+180 -> 1080
+key use protocol abema-license:// 
+
+*/
+
+
 
 chrome.webRequest.onBeforeRequest.addListener(function(req){
   return {cancel:true}

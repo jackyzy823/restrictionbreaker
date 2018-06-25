@@ -1,0 +1,8 @@
+checkWithin.js
+so just block this js? 
+or use data url to redirect the request
+
+wws.tv-asahi.co.jp/douga_mv/geo/within_area_check.php?callback=jqxxxx
+resp: jqxxxx({response:false}) --> response true url ""
+
+function overseaGuard

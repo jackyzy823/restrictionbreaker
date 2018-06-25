@@ -16,7 +16,8 @@
       "*://*.fod.fujitv.co.jp/*",
       "*://linear-abematv.akamaized.net/*",
       "*://abematv.akamaized.net/*",
-      "*://www.tv-asahi.co.jp/*"
+      "*://www.tv-asahi.co.jp/*",
+      "*://*.dmm.co.jp/*"
   ],
   "background": {
     "scripts": ["background.js"]
