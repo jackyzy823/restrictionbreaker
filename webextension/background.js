@@ -22,7 +22,6 @@ key use protocol abema-license://
 */
 
 
-
 chrome.webRequest.onBeforeRequest.addListener(function(req){
   return {cancel:true}
 },{urls:["http://www.tv-asahi.co.jp/douga/common/js/checkWithin.js"]},["blocking"])

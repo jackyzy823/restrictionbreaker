@@ -16,11 +16,12 @@
       "*://*.fod.fujitv.co.jp/*",
       "*://linear-abematv.akamaized.net/*",
       "*://abematv.akamaized.net/*",
+      "*://api.abema.io/*",
       "*://www.tv-asahi.co.jp/*",
       "*://*.dmm.co.jp/*"
   ],
   "background": {
-    "scripts": ["background.js"]
+    "scripts": ["iplib.js","background.js"]
 
   }
 
