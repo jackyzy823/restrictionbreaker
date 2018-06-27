@@ -8,3 +8,10 @@
 abema tv android
 
 abema license ? js -> anti debug 
+
+
+https://api.abema.io/v1/media/token?appVersion=v5.0.0&osLang=ja-JP&osName=pc&osTimezone=Asia%2FTokyo&osVersion=1.0.0
+{"token":"6n3uzsgHidwpUkvWtdjCHapqaeBQNvf8aZCUft5oimYGUffQwGXrP4A7xopXNYTZNvNr88uNKwE1pVKPnzE2FBCQ3CA5Sg9JGuyyeshpGFG1u9vm2y5Z8n6BZu"}
+
+
+https://linear-abematv.akamaized.net/channel/everybody-anime/manifest.mpd?ccf=27&dt=pc_chrome&enc=wv&t=6n3uzsgHidwpUkvWtdjCHapqaeBQNvf8aZCUft5oimYGUffQwGXrP4A7xopXNYTZNvNr88uNKwE1pVKPnzE2FBCQ3CA5Sg9JGuyyeshpGFG1u9vm2y5Z8n6BZu

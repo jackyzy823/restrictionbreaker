@@ -10,9 +10,15 @@ chrome.webRequest.onBeforeSendHeaders.addListener(function(req){
 {urls:["*://*.dmm.co.jp/*","*://*.api.brightcove.com/playback/*","*://abematv.akamaized.net/region*","*://linear-abematv.akamaized.net/*"]},["blocking","requestHeaders"])
 /*
 DMM preview does not work http://www.dmm.co.jp/service/-/html5_player/=/cid= /mtype=AhRVShI_/service=digital/floor=videoa/mode=/
-
+http://www.dmm.co.jp/service/newrecommend/-/recommends_call/ does not work
 */
 
+//force 1080
+chrome.webRequest.onBeforeRequest.addListener(function(req){
+
+  return {redirectUrl:req.url.replace(/\/\d+\/playlist.m3u8/,'/1080/playlist.m3u8')}
+
+},{urls:["*://linear-abematv.akamaized.net/channel/*/playlist.m3u8"]},["blocking"])
 /*
 Abema resolution
 https://linear-abematv.akamaized.net/channel/anime-live/720/playlist.m3u8

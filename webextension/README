@@ -1,6 +1,21 @@
 support:
     TVer.jp
     Abema.tv
+    FOD(aka CX) [http://fod.fujitv.co.jp]
+    tv-asahi [http://www.tv-asahi.co.jp/douga/index.php]
+    NTV [https://cu.ntv.co.jp]
+    TBS [http://www.tbs.co.jp/muryou-douga/top.html]
+    tv-tokyo[https://video.tv-tokyo.co.jp/]
+    DMM.co.jp (preview[working in progress] and recommend not work)
+
+Note:
+	some site requires some script (such as jquery) from ajax.googleapis.com. In mainland china , you should add this sites to your proxy.I do not offer any help for this.
 
 
-cookies -> for FOD
+TODO:
+	android application of this sites.
+	Jump Ads.
+	Switch quality (for Abema.tv and those using brightcove)
+	Download or record (by providing ffmpeg commandline parameter)
+
+
