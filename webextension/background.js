@@ -1,8 +1,12 @@
+const CHOSENIP = getRandomIp();
+console.log("Your IP:"+CHOSENIP+",You can change it by reload the extension if some site blocks this IP.");
+
+
 chrome.webRequest.onBeforeSendHeaders.addListener(function(req){
   req.requestHeaders = req.requestHeaders.filter(function(x){
     return x.name.toLowerCase()!= 'x-forwarded-for';
   });
-  req.requestHeaders.push({name:'X-Forwarded-For',value:'1.0.16.0'})//TODO:random japan ip
+  req.requestHeaders.push({name:'X-Forwarded-For',value:CHOSENIP})//TODO:random japan ip
   return {
     requestHeaders:req.requestHeaders
   }
@@ -12,6 +16,19 @@ chrome.webRequest.onBeforeSendHeaders.addListener(function(req){
 DMM preview does not work http://www.dmm.co.jp/service/-/html5_player/=/cid= /mtype=AhRVShI_/service=digital/floor=videoa/mode=/
 http://www.dmm.co.jp/service/newrecommend/-/recommends_call/ does not work
 */
+
+//preview
+chrome.webRequest.onBeforeRequest.addListener(function(req){
+  let cid = /cid=(.*?)\//.exec(req.url)[1];
+  if(cid.substr(-5,2) == "00"){
+    cid = cid.substr(0,cid.length-5)+ cid.slice(-3);
+  }
+  let videoUrl = "http://cc3001.dmm.co.jp/litevideo/freepv/"+cid[0]+"/"+cid.substr(0,3)+"/"+cid+"/"+cid+"_dmb_w.mp4";
+  //chrome do not allow autoplay with sound.
+  //TODO: resolve iframe cross-domain problem
+  return {redirectUrl: "data:text/html,<video src=\""+videoUrl+"\" controls=\"controls\" width=\"100%\" height=\"100%\" autoplay onended=\"window.parent.closePlayer();\">"}
+},{urls:["*://www.dmm.co.jp/service/-/html5_player/*"]},["blocking"])
+
 
 //force 1080
 chrome.webRequest.onBeforeRequest.addListener(function(req){
