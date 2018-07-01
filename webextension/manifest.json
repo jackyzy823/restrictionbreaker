@@ -1,10 +1,10 @@
 {
 
   "manifest_version": 2,
-  "name": "Restriction Breaker",
+  "name": "Weeaboo(仮)",
   "version": "0.1",
 
-  "description": "A tool for unblocking TVer.jp and abema.tv geolocation restriction.",
+  "description": "A tool for unblocking TVer.jp(tv-asahi,fujitv,ntv,tbs,tv-tokyo),abema.tv,dmm.co.jp geolocation restriction.",
 
   "permissions": [
       "activeTab",

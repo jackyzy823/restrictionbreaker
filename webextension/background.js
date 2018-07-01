@@ -3,6 +3,7 @@ console.log("Your IP:"+CHOSENIP+",You can change it by reload the extension if s
 
 
 chrome.webRequest.onBeforeSendHeaders.addListener(function(req){
+  console.log("why firefox do not go into here?")
   req.requestHeaders = req.requestHeaders.filter(function(x){
     return x.name.toLowerCase()!= 'x-forwarded-for';
   });
@@ -23,12 +24,19 @@ chrome.webRequest.onBeforeRequest.addListener(function(req){
   if(cid.substr(-5,2) == "00"){
     cid = cid.substr(0,cid.length-5)+ cid.slice(-3);
   }
+  //quality 300 -> sm 1000 -> dm 1500 -> dmb
   let videoUrl = "http://cc3001.dmm.co.jp/litevideo/freepv/"+cid[0]+"/"+cid.substr(0,3)+"/"+cid+"/"+cid+"_dmb_w.mp4";
   //chrome do not allow autoplay with sound.
-  //TODO: resolve iframe cross-domain problem
-  return {redirectUrl: "data:text/html,<video src=\""+videoUrl+"\" controls=\"controls\" width=\"100%\" height=\"100%\" autoplay onended=\"window.parent.closePlayer();\">"}
+  //TODO: resolve iframe cross-domain problem to allow closePlayer
+  // seems impossible :https://blog.mozilla.org/security/2017/10/04/treating-data-urls-unique-origins-firefox-57/
+  // except intercept this http://www.dmm.co.jp/digital/videoa/-/detail/ajax-movie/=/cid to avoid iframe? -> failed with XHR OPTIONS can not work correctly
+  return {redirectUrl: "data:text/html,<video src=\""+videoUrl+"\" controls=\"controls\" width=\"100%\" height=\"100%\" preload onended=\"window.parent.closePlayer();\">"}
 },{urls:["*://www.dmm.co.jp/service/-/html5_player/*"]},["blocking"])
 
+
+/*
+<iframe type="text/html" src="http://www.dmm.co.jp/service/-/html5_player/=/cid=1star788/mtype=AhRVShI_/service=digital/floor=videoa/mode=/" id="DMMSample_player_now" width="560" height="440" scrolling="no" border="0" style="border:none;" frameborder="0" allowfullscreen="" allow="autoplay"></iframe>
+*/
 
 //force 1080
 chrome.webRequest.onBeforeRequest.addListener(function(req){

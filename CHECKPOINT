@@ -8,6 +8,8 @@ tv.abema.i.a.g
 
 for exoplayers add header (maybe)
 
+How to record? abema-license 
+
 2.TVer.jp
     a. cue_poiner
     b. custom_fields -> advmapurl
@@ -86,3 +88,9 @@ love alien 2
 /www08/fod-plus7/phls/video/01234/4c86/4c86810003me1135a91.mp4.m3u8
 /www08/fod-plus7/phls/video/01234/4c86/4c86810002me113ef49.mp4.m3u8 
 /www08/fod-plus7/phls/video/01234/4c86/4c86810001me11354d6.mp4.m3u8
+
+
+TODO:
+	Abema Fresh live
+	line live 
+	
