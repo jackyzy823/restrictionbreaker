@@ -35,13 +35,18 @@ if(chrome.webRequest.filterResponseData){
       // do not pass through
     }
     filter.onstop = function(event){
-      let r = JSON.parse(String.fromCharCode.apply(null, new Uint8Array(respJson)));
+      let encoder = new TextEncoder();
+      let decoder = new TextDecoder();
+      let r = JSON.parse(decoder.decode(respJson));//String.fromCharCode.apply(null, new Uint8Array(respJson))
       r.cue_points=[];
-      filter.write(JSON.stringify(r));
+      filter.write(encoder.encode(JSON.stringify(r)));
       //write modified to
       filter.disconnect();
     }        
   },{urls:["*://*.api.brightcove.com/playback/*"]},["blocking"]);
+}
+else{
+  //onbeforerequest -> redirect to xhr response (with x-forwarded-for and accept policy [get policy from publisherid]) the modify json
 }
 
 
@@ -65,12 +70,14 @@ chrome.webRequest.onBeforeRequest.addListener(function(req){
 <iframe type="text/html" src="http://www.dmm.co.jp/service/-/html5_player/=/cid=1star788/mtype=AhRVShI_/service=digital/floor=videoa/mode=/" id="DMMSample_player_now" width="560" height="440" scrolling="no" border="0" style="border:none;" frameborder="0" allowfullscreen="" allow="autoplay"></iframe>
 */
 
-//force 1080
-chrome.webRequest.onBeforeRequest.addListener(function(req){
 
-  return {redirectUrl:req.url.replace(/\/\d+\/playlist.m3u8/,'/1080/playlist.m3u8')}
+// FAILED BECAUSE OF CORS (OPTIONS)
+// may do this via javascript ?
+// chrome.webRequest.onBeforeRequest.addListener(function(req){
+//   console.log("force replace!!!!")
+//   return {redirectUrl:req.url.replace(/\/\d+\/playlist.m3u8/,'/1080/playlist.m3u8')}
 
-},{urls:["*://linear-abematv.akamaized.net/channel/*/playlist.m3u8"]},["blocking"])
+// },{urls:["*://linear-abematv.akamaized.net/channel/*/playlist.m3u8*"]},["blocking"])
 /*
 Abema resolution
 https://linear-abematv.akamaized.net/channel/anime-live/720/playlist.m3u8

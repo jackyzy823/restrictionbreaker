@@ -2,6 +2,42 @@
 2. use cue_point and vast to play ad
 3. use brightcove cdn ,bypass by x-forwarded-for
 
+policykey  jp.hamitv.hamiand1.constants.CommonConst;
+
+public class CommonConst {
+    public static String ABC_CHANNEL_ID = "abc";
+    public static String ABC_POLICY_KEY = "BCpkADawqM2NfzEA47jZiJNK0SYahFenNwAtoehfrIAaCqxmHjBidnt_YfvFnp5j-Zi58FPj-zXAHATYU1nnOOuEf9XXV8JRGYSuZ5dgyNc2RjGv2Ej5zGfhxWs3_p4F7huxtbAD9fzQlg7b";
+    public static String ABC_PUBLISHER_ID = "5102072603001";
+    public static String EX_CHANNEL_ID = "ex";
+    public static String EX_POLICY_KEY = "BCpkADawqM2PogDy88LsWq649oBaW8vFy9s5D4vmsg-pCLVqlu70NaLZe7hygOC1_Pan9RQmtWlbCFD--xjJ8UyiLFXwQjiaVallifuOkOfsvNLyVnd31t8WFolaJJMDM7d6sbb090ubBiBW";
+    public static String KTV_CHANNEL_ID = "ktv";
+    public static String KTV_POLICY_KEY = "BCpkADawqM1llDtMelQ9nQyE91bAc-E5T1B0135MCCRZ_o4FlDkGWQY8t8Nrt1fJKAgui-kLefX-JGaRItrDXh_C1GlIgCSv-rhNPQYKJsY8nZp_IoJ38Mf3B5BSJLFulW0QhgQduipc9j4D";
+    public static String KTV_PUBLISHER_ID = "5718741494001";
+    public static String MBS_CHANNEL_ID = "mbs";
+    public static String MBS_POLICY_KEY = "BCpkADawqM1VhDl0FtgrrM8jB-hVNkcrdrx4x9C_60OSeN4jIHynGkIKw0PY1cOsRqQYJOnJRscPAbdPTcpzZ_4g89Gcte_yQFW-yeWxzrPECulIh9ZlaZsJ_3rH7Gjs_RnuWHx_lTzilaxh";
+    public static String MBS_PUBLISHER_ID = "5102072605001";
+    public static String NTV_CHANNEL_ID = "ntvdfp";
+    public static String NTV_POLICY_KEY = "BCpkADawqM1s6XkqRoC2a0eEORY7FFF780eHkHQZ93Fw752A9swymrSMZEVF1d7G3mSby3Etzj8MGJp_ZwXpbSTH1ApfZxZ1FSPQ4LXDQhpaMRADtCbxKFTpAxGYwN61DYKKksmg4uwcdhLD";
+    public static String NTV_PUBLISHER_ID = "4394098882001";
+    public static String RUSSIA_CHANNEL_ID = "wcup";
+    public static String RUSSIA_POLICY_KEY = "BCpkADawqM3KJLCLszoqY9KsoXN2Mz52LwKx4UXYRuEaUGr-o3JBSHmz_0WRicxowBj8vmbGRK_R7Us96DdBYuYEoVX9nHJ3DjkVW5-8L6bRmm6gck8IaeLLw21sM6mOHtNs9pIJPF6a4qSZlO6t_RlkpMY6sasaIaSYlarJ_8PFMPdxxfY6cGtJDnc";
+    public static String RUSSIA_PUBLISHER_ID = "5764318572001";
+    public static final int[] SPLASH_PICS = new int[]{R.drawable.tutorial1, R.drawable.tutorial2};
+    public static final int[] SPLASH_PICS_WITH_QUESTION = new int[]{R.drawable.tutorial1, R.drawable.tutorial2, R.drawable.tutorial2};
+    public static String TBS_CHANNEL_ID = "tbs";
+    public static String TBS_POLICY_KEY = "BCpkADawqM3m-3484dphPL5raj3jQJVlFecOYAvpxhtJaK99BVRKtxd9SC6q0kOsknI1FD3kplVUaJzneAQb55EkCcDHrD9m_yoesmjsIfJpKQXJKfmQ5LfAFJnmf2Sv48heP_R1PGznwbAn";
+    public static String TBS_POLICY_KEY2 = "BCpkADawqM1n_azNkrwm-kl2UhijTLt4W7KZ6KS9HluAoLPvyRFu2X4Xu2dUuW-lLOmc6X7WjsiBwh83m8ecNmxl-pVy9w3M9iI6-en-_wIDvNJixpoMf4BhdOPtwO_7XIol9P3wVrq2BIzw";
+    public static String TBS_PUBLISHER_ID = "4394098881001";
+    public static String TBS_PUBLISHER_ID2 = "4031511847001";
+    public static String TX_CHANNEL_ID = "tx";
+    public static String TX_POLICY_KEY = "BCpkADawqM1F2YPxbuFJzWtohXjxdgDgIJcsnWacQKaAuaf0gyu8yxCQUlca9Dh7V0Uu_8Rt5JUWZTpgcqzD_IT5hRVde8JIR7r1UYR73ne8S9iLSroqTOA2P-jtl2EUw_OrSMAtenvuaXRF";
+    public static String TX_PUBLISHER_ID = "3971130137001";
+    public static String YTV_CHANNEL_ID = "ytv";
+    public static String YTV_POLICY_KEY = "BCpkADawqM0kGrWxZoXJvJj5Uv6Lypjp4Nrwzz1ktDAuEbD1r_pj0oR1900CRG04FFkxo0ikc1_KmAlB4uvq_GnFwF4IsG_v9jhYOMajC9MkdVQ-QrpboS7vFV8RvK20V5v-St5WGPfXotPx";
+    public static String YTV_PUBLISHER_ID = "5330942432001";
+}
+
+
 
 https://tver.jp/corner/f0020625
 addPlayer(
