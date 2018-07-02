@@ -17,6 +17,33 @@ chrome.webRequest.onBeforeSendHeaders.addListener(function(req){
 DMM preview does not work http://www.dmm.co.jp/service/-/html5_player/=/cid= /mtype=AhRVShI_/service=digital/floor=videoa/mode=/
 http://www.dmm.co.jp/service/newrecommend/-/recommends_call/ does not work
 */
+if(chrome.webRequest.filterResponseData){
+  chrome.webRequest.onBeforeRequest.addListener(function(req){
+    let filter = chrome.webRequest.filterResponseData(req.requestId);
+    let respJson = null;
+    filter.onstart = function(event){
+        console.log("rewrite on!!!");
+    }
+    filter.ondata = function(event){
+      //save data
+      if(respJson == null){
+        respJson = event.data;
+      }
+      else{
+        respJson += event.data;
+      }
+      // do not pass through
+    }
+    filter.onstop = function(event){
+      let r = JSON.parse(String.fromCharCode.apply(null, new Uint8Array(respJson)));
+      r.cue_points=[];
+      filter.write(JSON.stringify(r));
+      //write modified to
+      filter.disconnect();
+    }        
+  },{urls:["*://*.api.brightcove.com/playback/*"]},["blocking"]);
+}
+
 
 //preview
 chrome.webRequest.onBeforeRequest.addListener(function(req){
