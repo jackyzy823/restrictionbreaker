@@ -79,7 +79,7 @@ function toLong(ip) {
   return(ipl >>> 0);
 };
 
-function getRandomIp(){
+function genIP(){
 	let selectedCIDR = JPIP_CIDR[(Math.floor(Math.random() * JPIP_CIDR.length)) >> 0];
 	let tmp = selectedCIDR.split('/');
 	let addr = tmp[0];
@@ -89,6 +89,17 @@ function getRandomIp(){
 	let first = (toLong(addr) & maskLong)>>>0;
 	let pick =  (Math.random()* numberOfAddresses ) >>> 0;
 	return fromLong(first+pick);
+}
+
+function getRandomIp(){
+	let strIp;
+	while(true){
+		strIp = genIP();
+		if(testAbema(strIp)){
+			break;
+		}
+	}
+	return strIp;
 }
 
 function testAbema(ip){

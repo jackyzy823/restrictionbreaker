@@ -78,3 +78,15 @@ Accept: application/json;pk=BCpkADawqM2N0e6IdrmQn-kEZJ0jRi-Dlm0aUZ9mVF2lcadunJzM
 response: 
 
 
+
+
+ADS:
+if (f.useMediaCuePoints && "oncue" === f.requestMode && h)
+    return y(),
+    void e["default"].log.error("Cancelling VMAP ad because useMediaCuePoints must be used with VAST");
+
+
+ima3?
+
+after cue_point
+ka(ja(C)) -> vmap1 (cancel this) [ function la(a)  parser]-> vast3

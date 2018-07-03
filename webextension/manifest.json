@@ -13,6 +13,7 @@
       "cookies",
       "*://*.tver.jp/*",
       "*://*.api.brightcove.com/*",
+      "*://ad.auditude.com/*",
       "*://*.stream.ne.jp/*",
       "*://*.fod.fujitv.co.jp/*",
       "*://*.abema.tv/*",
