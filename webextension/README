@@ -1,5 +1,5 @@
 support:
-	TVer.jp
+	TVer.jp 
 		FOD(aka CX) [http://fod.fujitv.co.jp]
 		tv-asahi [http://www.tv-asahi.co.jp/douga/index.php]
 		NTV [https://cu.ntv.co.jp]
@@ -11,14 +11,21 @@ support:
 	Abema.tv
 	DMM.co.jp (preview[working in progress] and recommend not work)
 
-Note:
-	some site requires some script (such as jquery) from ajax.googleapis.com  or statistics script from facebook/twitter. In mainland china , you should add this sites to your proxy.I do not offer any help for this.
 
+Jump Ads(firefox only)
+
+Note:
+	1.some site requires some script (such as jquery) from ajax.googleapis.com  or statistics script from facebook/twitter. In mainland china , you should add this sites to your proxy.I do not offer any help for this.
+	2. firefox requires all host permissions to do cross-domain xhr
+		example: in a.com do xhr to b.com
+		you need add permission both a.com and b.com
+		so for brightcove you need add all sites which using this.
 
 TODO:
 	android application of this sites.
 	Jump Ads.
 	Switch quality (for Abema.tv and those using brightcove)
 	Download or record (by providing ffmpeg commandline parameter)
+
 
 
