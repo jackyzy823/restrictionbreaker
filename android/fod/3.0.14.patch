@@ -1,0 +1,13 @@
+diff --git a/smali_classes2/jp/co/stream/fodplayer/util/GeoControllManager$1.smali b/smali_classes2/jp/co/stream/fodplayer/util/GeoControllManager$1.smali
+index bb1c553..a1bf63e 100644
+--- a/smali_classes2/jp/co/stream/fodplayer/util/GeoControllManager$1.smali
++++ b/smali_classes2/jp/co/stream/fodplayer/util/GeoControllManager$1.smali
+@@ -352,6 +352,8 @@
+ 
+     move-result v15
+ 
++    const/4 v15, 0x1
++
+     if-eqz v15, :cond_2
+ 
+     .line 75

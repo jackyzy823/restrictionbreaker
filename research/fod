@@ -1,3 +1,13 @@
 1. 4a76810002 -> different api no i.fod.fujitv/xxx.html
 
 http://fod.fujitv.co.jp/s/nextsmart/?site=index.php&auth=1
+
+
+
+
+android:
+	1. geomanger (done)
+	2. jump ad see vastplayer and FoDPlayerActivity
+	3. request api whether differ with pc
+
+	host :http://i.fod.fujitv.co.jp/fodapp/foddoga/data/host.json
