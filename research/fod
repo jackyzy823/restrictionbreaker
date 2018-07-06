@@ -6,8 +6,26 @@ http://fod.fujitv.co.jp/s/nextsmart/?site=index.php&auth=1
 
 
 android:
-	1. geomanger (done)
-	2. jump ad see vastplayer and FoDPlayerActivity
+	1. geomanger (done) via  GeoControllManager$1.smali by compare type ==true | 1
+	2. jump ad see vastplayer and FoDPlayerActivity by ConfigParser.smali getParams skip fparamsurl or  adskipmode=none 1142-1167? or FoDPlayerActivity.java getAdList?
 	3. request api whether differ with pc
 
+Endpoint.java apiconfig.java
+
 	host :http://i.fod.fujitv.co.jp/fodapp/foddoga/data/host.json
+
+    "cdn_host":"http://i.fod.fujitv.co.jp/",
+         "fod_host":"https://fod.fujitv.co.jp/",
+         "push_host":"https://favorite.fod.fujitv.co.jp/",
+         "resume_host":"https://resume.fod.fujitv.co.jp/",
+         "fox_enabled":1,
+         "repro_enabled":1
+      },
+
+cdn_host +cdn_dir + endpoint_path_program_navi_not_login
+http://i.fod.fujitv.co.jp/fodapp/foddoga/data/plus7/program_navi.json
+
+
+"https://fod.fujitv.co.jp/api/premium/get_program_view.aspx?lg=0&luid=programid"
+
+

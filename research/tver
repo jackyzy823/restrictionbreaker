@@ -90,3 +90,15 @@ ima3?
 
 after cue_point
 ka(ja(C)) -> vmap1 (cancel this) [ function la(a)  parser]-> vast3
+
+tver pc:
+Error because cue_point dismatch vmap
+
+
+ANDROID:
+ 1 cue_points from json will be override by  LoadVmapXmlTask -> onPostExecute ( jp.co.brightcove.videoplayerlib.fragment.BCVideoPlayerFragment ->  smali_classes2/jp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5$1.smali )
+    customfiled to build vmapuri
+
+TODO: quality
+        findHighQualitySource
+                source.java bitrate? edgetask -> new source
