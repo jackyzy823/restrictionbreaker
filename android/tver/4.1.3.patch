@@ -14,4 +14,24 @@ index 1f53af6..8857d34 100644
 +
      .line 149
      iget-object v3, p0, Lcom/brightcove/player/edge/EdgeTask;->options:Ljava/util/Map;
+
+diff --git a/smali_classes2/jp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5$1.smali b/smali_classes2/jp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5$1.smali
+index b891289..cf86d4c 100644
+--- a/smali_classes2/jp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5$1.smali
++++ b/smali_classes2/jp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5$1.smali
+@@ -79,15 +79,6 @@
  
+     invoke-interface {v0}, Ljava/util/List;->clear()V
+ 
+-    .line 1022
+-    iget-object v0, p0, Ljp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5$1;->val$video:Lcom/brightcove/player/model/Video;
+-
+-    invoke-virtual {v0}, Lcom/brightcove/player/model/Video;->getCuePoints()Ljava/util/List;
+-
+-    move-result-object v0
+-
+-    invoke-interface {v0, p1}, Ljava/util/List;->addAll(Ljava/util/Collection;)Z
+-
+     .line 1025
+     :cond_0
+     iget-object v0, p0, Ljp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5$1;->this$1:Ljp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5;

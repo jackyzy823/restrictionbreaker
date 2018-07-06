@@ -1,4 +1,5 @@
 Name:民放公式テレビポータル「tver（ティーバー）-」
 Package:jp.hamitv.hamiand1
 
+Change: 1.Remove geo restriction 2.Jump Ad
 Note: replace ip in patch with any other japan ip.
