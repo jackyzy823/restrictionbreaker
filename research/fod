@@ -2,8 +2,28 @@
 
 http://fod.fujitv.co.jp/s/nextsmart/?site=index.php&auth=1
 
+PC:
+ ad: https://fod.fujitv.co.jp/mz/AdJson3_ssl.aspx?
+sample:
+{
+    "closebtn": "on",
+    "show_ad_point": "off",
+    "ad_skipmode": "last",
+    "skip_time": -1,
+    "ad_linear": [
+        {
+            "queue_point": 0,
+            "url": "https://web-jp.ad-v.jp/adam/inline?cat=fod-pc-cm.takatoshinukumizu&format=preroll&page=1530964321199&fod_g=f&fod_a=26&fod_p=1378088&fod_d=",
+            "title": false,
+            "time": true,
+            "progress": true,
+            "num_of_ads": true,
+            "skip_time": -1
+        }
+    ]
+}
 
-
+redirect or just cancel
 
 android:
 	1. geomanger (done) via  GeoControllManager$1.smali by compare type ==true | 1

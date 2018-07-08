@@ -1,9 +1,9 @@
 support:
 	TVer.jp 
-		FOD(aka CX) [http://fod.fujitv.co.jp]
-		tv-asahi [http://www.tv-asahi.co.jp/douga/index.php]
-		NTV [https://cu.ntv.co.jp]
-		TBS [http://www.tbs.co.jp/muryou-douga/top.html]
+		FOD(aka CX) [http://fod.fujitv.co.jp] (Using JStream)
+		tv-asahi [http://www.tv-asahi.co.jp/douga/catchup]  (Using uliza)
+		NTV [https://cu.ntv.co.jp] (Using brightcove)
+		TBS [http://www.tbs.co.jp/muryou-douga/top.html] (Using brightcove)
 		tv-tokyo[https://video.tv-tokyo.co.jp/]
 		MBS [https://dizm.mbs.jp/]
 		KTV [http://ktv-smart.jp/]
@@ -12,7 +12,7 @@ support:
 	DMM.co.jp (preview[working in progress] and recommend not work)
 
 
-Jump Ads(firefox only)
+Jump Ads
 
 Note:
 	1.some site requires some script (such as jquery) from ajax.googleapis.com  or statistics script from facebook/twitter. In mainland china , you should add this sites to your proxy.I do not offer any help for this.
@@ -22,6 +22,7 @@ Note:
 		so for brightcove you need add all sites which using this.
 
 TODO:
+	Options page
 	android application of this sites.
 	Jump Ads.
 	Switch quality (for Abema.tv and those using brightcove)

@@ -1,2 +1,5 @@
 https://cu.ntv.co.jp 
 use brightcove
+
+Ad server
+serverUrl: "https://pubads.g.doubleclick.net/gampad/ads" 

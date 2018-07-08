@@ -1,0 +1,48 @@
+use brightcove
+
+vast inline ad? do not need vmap?
+
+https://ad.auditude.com/adserver/vast3
+
+sample:
+<?xml version="1.0"?>
+<VAST version="3.0">
+  <Ad id="344913" sequence="1">
+    <InLine>
+      <AdSystem version="1.0">Auditude</AdSystem>
+      <AdTitle>171024_random_ALL</AdTitle>
+      <Error><![CDATA[https://ad.auditude.com/adserver/e?type=aderr&v3error=[ERRORCODE]&cid=1733861433&z=266923&a=344913&s=9e6d58bc&t=1531015726&uid=XnEbpIa6RBuPd5tQHPX8aQ&l=1531044526&u=0f0736c7ca546450ce66df9be8812b26&br=1&sq=1&pod=id:1,ctype:l,ptype:p,dur:61,lot:1,cpos:1&ax=0,0,0,0]]></Error>
+      <Impression id="urn:aeid:344913"><![CDATA[https://ad.auditude.com/adserver/e?type=adimp&cid=1733861433&z=266923&a=344913&s=9e6d58bc&t=1531015726&uid=XnEbpIa6RBuPd5tQHPX8aQ&l=1531044526&u=0f0736c7ca546450ce66df9be8812b26&br=1&sq=1&pod=id:1,ctype:l,ptype:p,dur:61,lot:1,cpos:1&ax=0,0,0,0]]></Impression>
+      <Creatives>
+        <Creative>
+          <Linear>
+            <Duration>00:00:05</Duration>
+            <TrackingEvents>
+              <Tracking event="creativeView"><![CDATA[https://ad.auditude.com/adserver/i/z=266923;l=1531044526;u=0f0736c7ca546450ce66df9be8812b26;uid=XnEbpIa6RBuPd5tQHPX8aQ;cid=1733861433;s=9e6d58bc;t=1531015726;br=1;sq=1;pod=id%3a1%2cctype%3al%2cptype%3ap%2cdur%3a61%2clot%3a1%2ccpos%3a1;ax=0%2c0%2c0%2c0;w=0;a=344913;a1=105/c1280x720.mp4]]></Tracking>
+              <Tracking event="start"><![CDATA[https://ad.auditude.com/adserver/e?type=AD_PROGRESS&a=344913&a1=105&ref=urn:asset:344913:105&unit=percent&progress=0&cid=1733861433&z=266923&a=344913&s=9e6d58bc&t=1531015726&uid=XnEbpIa6RBuPd5tQHPX8aQ&l=1531044526&u=0f0736c7ca546450ce66df9be8812b26&br=1&sq=1&pod=id:1,ctype:l,ptype:p,dur:61,lot:1,cpos:1&ax=0,0,0,0]]></Tracking>
+              <Tracking event="firstQuartile"><![CDATA[https://ad.auditude.com/adserver/e?type=AD_PROGRESS&a=344913&a1=105&ref=urn:asset:344913:105&unit=percent&progress=25&cid=1733861433&z=266923&a=344913&s=9e6d58bc&t=1531015726&uid=XnEbpIa6RBuPd5tQHPX8aQ&l=1531044526&u=0f0736c7ca546450ce66df9be8812b26&br=1&sq=1&pod=id:1,ctype:l,ptype:p,dur:61,lot:1,cpos:1&ax=0,0,0,0]]></Tracking>
+              <Tracking event="midpoint"><![CDATA[https://ad.auditude.com/adserver/e?type=AD_PROGRESS&a=344913&a1=105&ref=urn:asset:344913:105&unit=percent&progress=50&cid=1733861433&z=266923&a=344913&s=9e6d58bc&t=1531015726&uid=XnEbpIa6RBuPd5tQHPX8aQ&l=1531044526&u=0f0736c7ca546450ce66df9be8812b26&br=1&sq=1&pod=id:1,ctype:l,ptype:p,dur:61,lot:1,cpos:1&ax=0,0,0,0]]></Tracking>
+              <Tracking event="thirdQuartile"><![CDATA[https://ad.auditude.com/adserver/e?type=AD_PROGRESS&a=344913&a1=105&ref=urn:asset:344913:105&unit=percent&progress=75&cid=1733861433&z=266923&a=344913&s=9e6d58bc&t=1531015726&uid=XnEbpIa6RBuPd5tQHPX8aQ&l=1531044526&u=0f0736c7ca546450ce66df9be8812b26&br=1&sq=1&pod=id:1,ctype:l,ptype:p,dur:61,lot:1,cpos:1&ax=0,0,0,0]]></Tracking>
+              <Tracking event="complete"><![CDATA[https://ad.auditude.com/adserver/e?type=AD_PROGRESS&a=344913&a1=105&ref=urn:asset:344913:105&unit=percent&progress=100&cid=1733861433&z=266923&a=344913&s=9e6d58bc&t=1531015726&uid=XnEbpIa6RBuPd5tQHPX8aQ&l=1531044526&u=0f0736c7ca546450ce66df9be8812b26&br=1&sq=1&pod=id:1,ctype:l,ptype:p,dur:61,lot:1,cpos:1&ax=0,0,0,0]]></Tracking>
+              <Tracking event="start"><![CDATA[https://log5.interactive-circle.jp/data5/142384205.gif?vr_tagid1=1029&vr_tagid2=0001&url=ad-imp-survey&vr_opt1=ad&vr_opt2=5762141510001&vr_opt3=36316&vr_opt4=pre&vr_opt5=0&vr_opt6=1029&vr_opt8=&id1=]]></Tracking>
+              <Tracking event="firstQuartile"><![CDATA[https://log5.interactive-circle.jp/data5/994365372.gif?vr_tagid1=1029&vr_tagid2=0001&url=ad-imp-survey&vr_opt1=ad&vr_opt2=5762141510001&vr_opt3=36316&vr_opt4=pre&vr_opt5=25&vr_opt6=1029&vr_opt8=&id1=]]></Tracking>
+              <Tracking event="midpoint"><![CDATA[https://log5.interactive-circle.jp/data5/243795740.gif?vr_tagid1=1029&vr_tagid2=0001&url=ad-imp-survey&vr_opt1=ad&vr_opt2=5762141510001&vr_opt3=36316&vr_opt4=pre&vr_opt5=50&vr_opt6=1029&vr_opt8=&id1=]]></Tracking>
+              <Tracking event="thirdQuartile"><![CDATA[https://log5.interactive-circle.jp/data5/109673740.gif?vr_tagid1=1029&vr_tagid2=0001&url=ad-imp-survey&vr_opt1=ad&vr_opt2=5762141510001&vr_opt3=36316&vr_opt4=pre&vr_opt5=75&vr_opt6=1029&vr_opt8=&id1=]]></Tracking>
+              <Tracking event="complete"><![CDATA[https://log5.interactive-circle.jp/data5/2131462804.gif?vr_tagid1=1029&vr_tagid2=0001&url=ad-imp-survey&vr_opt1=ad&vr_opt2=5762141510001&vr_opt3=36316&vr_opt4=pre&vr_opt5=100&vr_opt6=1029&vr_opt8=&id1=]]></Tracking>
+            </TrackingEvents>
+            <AdParameters><![CDATA[campaign_id=36316]]></AdParameters>
+            <MediaFiles>
+              <MediaFile id="urn:a2:344913:105" delivery="progressive" type="video/mp4" width="1280" height="720"><![CDATA[https://vo.ad-v.jp/mbs/cu/mbs_all/liyooshie5.mp4]]></MediaFile>
+            </MediaFiles>
+          </Linear>
+        </Creative>
+      </Creatives>
+      <Extensions>
+        <Extension type="Behavior">
+          <Behavior type="105">format=video</Behavior>
+          <Behavior type="scr">~2~C51F09A19521035BCB0CB3ADC8589C4C</Behavior>
+        </Extension>
+      </Extensions>
+    </InLine>
+  </Ad>
+</VAST>

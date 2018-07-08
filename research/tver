@@ -102,3 +102,18 @@ ANDROID:
 TODO: quality
         findHighQualitySource
                 source.java bitrate? edgetask -> new source
+
+
+How to download
+
+1. livestreamer
+Note: only support m3u8 ,do not support dash .Parallel Download
+Requirement : pip install livestreamer pycrypto
+    livestreamer "hlsvariant://http://<m3u8link>" best  --hls-segment-threads 10 -o <result mp4> 
+
+2. ffmpeg
+Note: support m3u8 and dash, pick best quality manually via program id or stream id. Single thread download
+    Dash: 
+        ffmpeg -i <mpd link> -map 0:4 -map 0:7 -c copy <result mp4>   // 0:4 best video 0:7 best audio
+    m3u8
+        ffmpeg -i <m3u8 link> -map p:4 -c copy <result mp4>

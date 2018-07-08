@@ -1,3 +1,5 @@
+tv-asahi using uliza
+
 checkWithin.js
 so just block this js? 
 or use data url to redirect the request
@@ -6,3 +8,32 @@ wws.tv-asahi.co.jp/douga_mv/geo/within_area_check.php?callback=jqxxxx
 resp: jqxxxx({response:false}) --> response true url ""
 
 function overseaGuard
+
+
+in html page
+$("div #ulizaplayerpc").append($("<video></video>").addClass("ulizahtml5").attr("id",upid).attr("width","640").attr("height","360").append($("<source>").attr("src","https://www2.uliza.jp/IF/iphone/iPhonePlaylist.m3u8?v=xxxxxxxx&p=xxxx&d=xxx&n=xxxx&cpv=1").attr("type","application/x-mpegURL")));
+
+AD link
+https://ad-api-v01.uliza.jp/reqVMAP.php ******
+sample 
+<?xml version="1.0" encoding="utf-8"?>
+
+<vmap:VMAP xmlns:vmap="http://www.iab.net/vmap-1.0" xmlns:uliza="http://uliza.jp/?vmap" version="1.0">
+  <vmap:AdBreak breakType="linear" breakId="1" timeOffset="start">
+    <vmap:AdSource allowMultipleAds="true" followRedirects="true" id="1">
+      <vmap:AdTagURI templateType="vast"><![CDATA[]]></vmap:AdTagURI>
+    </vmap:AdSource>
+    <vmap:TrackingEvents>
+      <vmap:Tracking event="breakStart"><![CDATA[http://ad-beacon-v01.uliza.jp/beaconlog/breakstart.gif]]></vmap:Tracking>
+      <vmap:Tracking event="breakEnd"><![CDATA[http://ad-beacon-v01.uliza.jp/beaconlog/breakend.gif]]></vmap:Tracking>
+      <vmap:Tracking event="error"><![CDATA[http://ad-beacon-v01.uliza.jp/beaconlog/error.gif]]></vmap:Tracking>
+    </vmap:TrackingEvents>
+    <vmap:Extensions/>
+  </vmap:AdBreak>
+  <vmap:Extensions>
+    <uliza:UUID>7560eb4d51b44bf9b034abe5fdd29c78</uliza:UUID>
+    <uliza:SessionID>5441d425-a6e8-4b90-be94-cbe45aa39842</uliza:SessionID>
+    <uliza:UnDisplayTime>0</uliza:UnDisplayTime>
+    <uliza:UlizaTrackingEvent/>
+  </vmap:Extensions>
+</vmap:VMAP>
