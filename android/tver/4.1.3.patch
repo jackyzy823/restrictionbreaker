@@ -1,3 +1,26 @@
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index 9e1bb07..f72e7df 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -1,4 +1,4 @@
+-<?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" package="jp.hamitv.hamiand1" platformBuildVersionCode="25" platformBuildVersionName="7.1.1">
++<?xml version="1.0" encoding="utf-8" standalone="no"?><manifest xmlns:android="http://schemas.android.com/apk/res/android" package="jp.hamitv.hamiand1.kai" platformBuildVersionCode="25" platformBuildVersionName="7.1.1">
+     <permission android:name="jp.hamitv.hamiand1.permission.C2D_MESSAGE" android:protectionLevel="signature"/>
+     <uses-permission android:name="jp.hamitv.hamiand1.permission.C2D_MESSAGE"/>
+     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index 031ad36..02ec706 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -55,7 +55,7 @@
+     <string name="abc_font_family_title_material">sans-serif-medium</string>
+     <string name="accept">Accept</string>
+     <string name="am_text">午前</string>
+-    <string name="app_name">ティーバー</string>
++    <string name="app_name">ティーバー(改)</string>
+     <string name="appbar_scrolling_view_behavior">android.support.design.widget.AppBarLayout$ScrollingViewBehavior</string>
+     <string name="area_dialog_message">地域を設定してください</string>
+     <string name="bc_alert_item_auto_quality">自動</string>
 diff --git a/smali/com/brightcove/player/edge/EdgeTask.smali b/smali/com/brightcove/player/edge/EdgeTask.smali
 index 1f53af6..8857d34 100644
 --- a/smali/com/brightcove/player/edge/EdgeTask.smali
