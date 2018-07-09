@@ -1,0 +1,5 @@
+Name:tbs-free-ー無料でドラマやバラエティ番組を視聴
+Package:jp.co.tbs.tbsplayer
+
+Change: 1.Remove geo restriction 2.Jump Ad
+Note: replace ip in patch with any other japan ip.

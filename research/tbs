@@ -2,3 +2,13 @@ http://www.tbs.co.jp/muryou-douga/top.html
 use brightcove
 
  https://ad.auditude.com/adserver/vmap1
+
+Android
+
+	version:2.8.0
+	 
+ jp.co.tbs.tbsplayer.MainActivity.java ->  new LoadVmapXmlTask() {
+
+
+
+ SDK: com.brightcove.player version :4.13.2

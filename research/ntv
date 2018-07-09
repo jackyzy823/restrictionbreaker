@@ -3,3 +3,9 @@ use brightcove
 
 Ad server
 serverUrl: "https://pubads.g.doubleclick.net/gampad/ads" 
+
+android :2.6.0
+
+SDK 4.13.2
+
+same as tbs

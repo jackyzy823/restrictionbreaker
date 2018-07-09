@@ -99,6 +99,10 @@ ANDROID:
  1 cue_points from json will be override by  LoadVmapXmlTask -> onPostExecute ( jp.co.brightcove.videoplayerlib.fragment.BCVideoPlayerFragment ->  smali_classes2/jp/co/brightcove/videoplayerlib/fragment/BCVideoPlayerFragment$5$1.smali )
     customfiled to build vmapuri
 
+
+ SDK: com.brightcove.player version :5.0.5
+
+
 TODO: quality
         findHighQualitySource
                 source.java bitrate? edgetask -> new source
