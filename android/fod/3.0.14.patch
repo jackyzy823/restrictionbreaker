@@ -1,3 +1,16 @@
+diff --git a/smali_classes2/jp/co/stream/fodplayer/util/ConfigParser.smali b/smali_classes2/jp/co/stream/fodplayer/util/ConfigParser.smali
+index 1500a7c..7465669 100644
+--- a/smali_classes2/jp/co/stream/fodplayer/util/ConfigParser.smali
++++ b/smali_classes2/jp/co/stream/fodplayer/util/ConfigParser.smali
+@@ -1164,6 +1164,8 @@
+     move-result-object v9
+ 
+     :goto_e
++    const-string/jumbo v9, "none"
++
+     iput-object v9, v10, Ljp/co/stream/fodplayer/util/ConfigModel;->adSkipMode:Ljava/lang/String;
+ 
+     .line 195
 diff --git a/smali_classes2/jp/co/stream/fodplayer/util/GeoControllManager$1.smali b/smali_classes2/jp/co/stream/fodplayer/util/GeoControllManager$1.smali
 index bb1c553..a1bf63e 100644
 --- a/smali_classes2/jp/co/stream/fodplayer/util/GeoControllManager$1.smali
