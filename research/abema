@@ -7,7 +7,61 @@
 
 abema tv android
 
+v 3.27.1
+ip/check
+tv.abema.api.MaxMindApiClient.java  .source "MaxMindApiClient.java"
+smali_classes2/tv/abema/api/MaxMindApiClient.smali
+-> bM
+change to 
+    .line 54
+    :cond_0
+    const/4 v0, 0x1
+
+region
+tv.abema.api.q  aka .source "AkamaizeApiClient.java"
+smali_classes2/tv/abema/api/q.smali
+-> aWP   
+change to
+    .line 49
+    return-object v0
+
+    :cond_0
+    const/4 v0, 0x1
+
+tv.abema.i.a.h aka .source "AbemaOnlineDataSourceFactory.java"
+smali_classes2/tv/abema/i/a/h.smali
+# virtual methods
+.method public bEE()Ltv/abema/i/a/b;
+    .locals 6
+
+    .prologue
+    .line 41
+    new-instance v0, Ltv/abema/i/a/g;
+
+    iget-object v1, p0, Ltv/abema/i/a/h;->baseDataSourceFactory:Lcom/google/android/exoplayer2/upstream/DataSource$Factory;
+
+    invoke-interface {v1}, Lcom/google/android/exoplayer2/upstream/DataSource$Factory;->createDataSource()Lcom/google/android/exoplayer2/upstream/DataSource;
+
+    move-result-object v1
+    
+    #change start
+    check-cast v1, Lcom/google/android/exoplayer2/upstream/HttpDataSource;
+
+    const-string v2, "X-Forwarded-For"
+
+    const-string v3, "1.0.16.0"
+
+    invoke-interface {v1, v2, v3}, Lcom/google/android/exoplayer2/upstream/HttpDataSource;->setRequestProperty(Ljava/lang/String;Ljava/lang/String;)V
+    #change end
+
+
+
 abema license ? js -> anti debug 
+TODO :
+in android abematv-license and abematv  -> 2 kinds protocol see (AbemaOnlineDataSource.kt  VideoLicenseKeyUriSource VideoKeyUriSource)
+PlayerManager prepare(this.source)
+
+HlsMediaKey.kt is {cid k and lt}
 
 
 https://api.abema.io/v1/media/token?appVersion=v5.0.0&osLang=ja-JP&osName=pc&osTimezone=Asia%2FTokyo&osVersion=1.0.0
@@ -15,3 +69,173 @@ https://api.abema.io/v1/media/token?appVersion=v5.0.0&osLang=ja-JP&osName=pc&osT
 
 
 https://linear-abematv.akamaized.net/channel/everybody-anime/manifest.mpd?ccf=27&dt=pc_chrome&enc=wv&t=6n3uzsgHidwpUkvWtdjCHapqaeBQNvf8aZCUft5oimYGUffQwGXrP4A7xopXNYTZNvNr88uNKwE1pVKPnzE2FBCQ3CA5Sg9JGuyyeshpGFG1u9vm2y5Z8n6BZu
+
+
+
+
+java code:
+import java.io.IOException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import java.util.List;
+import javax.crypto.Cipher;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+import java.math.BigInteger;
+
+
+
+
+
+public class abematvdec {
+//from tv.abema.i.a.k.java RC4
+	static public class rc4 {
+    private byte[] gOJ = new byte[256];
+    private int gOK;
+    private int i = 0;
+
+    rc4(byte[] bArr) {
+        int length = bArr.length;
+        while (this.i < 256) {
+            this.gOJ[this.i] = (byte) this.i;
+            this.i++;
+        }
+        this.gOK = 0;
+        this.i = 0;
+        while (this.i < 256) {
+            this.gOK = ((this.gOK + bArr[this.i % length]) + this.gOJ[this.i]) & 255;
+            byte b = this.gOJ[this.i];
+            this.gOJ[this.i] = this.gOJ[this.gOK];
+            this.gOJ[this.gOK] = b;
+            this.i++;
+        }
+        this.gOK = 0;
+        this.i = 0;
+    }
+
+    public void j(byte[] bArr, byte[] bArr2) {
+        int length = bArr.length;
+        int i = 0;
+        int i2 = 0;
+        while (i2 < length) {
+            this.i = (this.i + 1) & 255;
+            this.gOK = (this.gOK + this.gOJ[this.i]) & 255;
+            byte b = this.gOJ[this.i];
+            this.gOJ[this.i] = this.gOJ[this.gOK];
+            this.gOJ[this.gOK] = b;
+            int i3 = i + 1;
+            int i4 = i2 + 1;
+            bArr2[i] = (byte) (bArr[i2] ^ this.gOJ[(this.gOJ[this.i] + this.gOJ[this.gOK]) & 255]);
+            i = i3;
+            i2 = i4;
+        }
+    }
+}
+
+
+
+//from tv.abema.i.a.j.java
+	private static final BigInteger gOI = BigInteger.valueOf(58);
+
+    static byte[] decode(String str) {
+        int i;
+        int i2;
+        int i3 = 1;
+        byte[] toByteArray = rU(str).toByteArray();
+        if (toByteArray.length <= 1 || toByteArray[0] != (byte) 0 || toByteArray[1] >= (byte) 0) {
+            i = 0;
+        } else {
+            i = 1;
+        }
+        int i4 = 0;
+        for (i2 = 0; str.charAt(i2) == "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".charAt(0); i2++) {
+            i4++;
+        }
+        int length = toByteArray.length;
+        if (i != 0) {
+            i2 = 1;
+        } else {
+            i2 = 0;
+        }
+        byte[] obj = new byte[((length - i2) + i4)];
+        if (i == 0) {
+            i3 = 0;
+        }
+        System.arraycopy(toByteArray, i3, obj, i4, obj.length - i4);
+        return obj;
+    }
+
+    private static BigInteger rU(String str) {
+        BigInteger valueOf = BigInteger.valueOf(0);
+        for (int length = str.length() - 1; length >= 0; length--) {
+            int indexOf = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".indexOf(str.charAt(length));
+            if (indexOf == -1) {
+                throw new IllegalStateException("Illegal character " + str.charAt(length) + " at " + length);
+            }
+            valueOf = valueOf.add(BigInteger.valueOf((long) indexOf).multiply(gOI.pow((str.length() - 1) - length)));
+        }
+        return valueOf;
+    }
+
+
+
+//from l.java
+    static byte[] k(byte[] bArr, byte[] bArr2) throws IOException {
+        Key secretKeySpec = new SecretKeySpec(bArr2, "AES");
+        try {
+            Cipher instance = Cipher.getInstance("AES/ECB/NoPadding");
+            instance.init(2, secretKeySpec);
+            return instance.doFinal(bArr);
+        } catch (Throwable e) {
+            throw new IOException(e.getMessage(), e);
+        }
+    }
+
+    static SecretKeySpec bEF() {
+        byte[] bArr = new byte[32];
+        new rc4(new byte[]{(byte) -37, (byte) -104, (byte) -88, (byte) -25, (byte) -50, (byte) -54, (byte) 52, (byte) 36, (byte) -39, (byte) 117, (byte) 40, (byte) 15, (byte) -112, (byte) -67, (byte) 3, (byte) -18}).j(new byte[]{(byte) -44, (byte) -73, (byte) 24, (byte) -69, (byte) -70, (byte) -100, (byte) -5, (byte) 125, (byte) 1, (byte) -110, (byte) -91, (byte) -113, (byte) -98, (byte) 45, (byte) 20, (byte) 106, (byte) -4, (byte) 93, (byte) -78, (byte) -98, (byte) 67, (byte) 82, (byte) -34, (byte) 5, (byte) -4, (byte) 76, (byte) -14, (byte) -63, (byte) 0, (byte) 88, (byte) 4, (byte) -69}, bArr);
+        return new SecretKeySpec(bArr, "hmacSHA256");
+    }
+
+    static byte[] a(byte[] bArr, SecretKeySpec secretKeySpec) throws IOException {
+        Throwable e;
+        try {
+            Mac instance = Mac.getInstance(secretKeySpec.getAlgorithm());
+            instance.init(secretKeySpec);
+            return instance.doFinal(bArr);
+        } catch (NoSuchAlgorithmException e2) {
+            e = e2;
+            throw new IOException(e.getMessage(), e);
+        } catch (InvalidKeyException e3) {
+            e = e3;
+            throw new IOException(e.getMessage(), e);
+        }
+    }
+
+
+
+
+
+
+	public static void main(String[] args) {
+		// mediatoken relateship with deviceid?
+		// lt -> ticket abema-license:// <lt>
+		// https://license.abema.io/abematv-hls?t=<mediatoken> POST: {lt:lt ....}
+
+		String contentkey = null;
+		String contentid = null;
+		String deviceid = null ;
+		try{
+			k ( decode(contentkey) , a((contentid+deviceid).getBytes(),bEF()) );
+			
+		}catch(IOException e){
+
+		}
+		
+
+
+
+	}
+
+}

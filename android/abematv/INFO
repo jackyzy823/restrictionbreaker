@@ -1,0 +1,7 @@
+Name:abematv-無料インターネットテレビ局-アニメやニュース、スポーツ見放題
+Package:tv.abema
+
+Change: 1.Remove geo restriction 
+Note: replace ip in patch with any other japan ip.
+
+TODO: enable Premium utilities.

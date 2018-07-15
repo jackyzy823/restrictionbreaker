@@ -1,0 +1,45 @@
+diff --git a/smali_classes2/tv/abema/api/MaxMindApiClient.smali b/smali_classes2/tv/abema/api/MaxMindApiClient.smali
+index 4923a13..6a0f6dd 100644
+--- a/smali_classes2/tv/abema/api/MaxMindApiClient.smali
++++ b/smali_classes2/tv/abema/api/MaxMindApiClient.smali
+@@ -293,7 +293,7 @@
+ 
+     .line 54
+     :cond_0
+-    const/4 v0, 0x0
++    const/4 v0, 0x1
+ 
+     goto :goto_0
+ 
+diff --git a/smali_classes2/tv/abema/api/q.smali b/smali_classes2/tv/abema/api/q.smali
+index b0dc98e..a47f62a 100644
+--- a/smali_classes2/tv/abema/api/q.smali
++++ b/smali_classes2/tv/abema/api/q.smali
+@@ -337,7 +337,7 @@
+     return-object v0
+ 
+     :cond_0
+-    const/4 v0, 0x0
++    const/4 v0, 0x1
+ 
+     goto :goto_0
+ 
+diff --git a/smali_classes2/tv/abema/i/a/h.smali b/smali_classes2/tv/abema/i/a/h.smali
+index efa310f..9fc1dc8 100644
+--- a/smali_classes2/tv/abema/i/a/h.smali
++++ b/smali_classes2/tv/abema/i/a/h.smali
+@@ -127,6 +127,14 @@
+     invoke-interface {v1}, Lcom/google/android/exoplayer2/upstream/DataSource$Factory;->createDataSource()Lcom/google/android/exoplayer2/upstream/DataSource;
+ 
+     move-result-object v1
++    
++    check-cast v1, Lcom/google/android/exoplayer2/upstream/HttpDataSource;
++
++    const-string v2, "X-Forwarded-For"
++
++    const-string v3, "1.0.16.0"
++
++    invoke-interface {v1, v2, v3}, Lcom/google/android/exoplayer2/upstream/HttpDataSource;->setRequestProperty(Ljava/lang/String;Ljava/lang/String;)V
+ 
+     iget-object v2, p0, Ltv/abema/i/a/h;->gOF:Ltv/abema/i/a/c;
+ 
