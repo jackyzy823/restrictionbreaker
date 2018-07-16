@@ -135,7 +135,7 @@ public class abematvdec {
 
 
 
-//from tv.abema.i.a.j.java
+//from tv.abema.i.a.j.java  -> get a 32 bit bytearray from a big int
 	private static final BigInteger gOI = BigInteger.valueOf(58);
 
     static byte[] decode(String str) {
@@ -180,7 +180,7 @@ public class abematvdec {
 
 
 
-//from l.java
+//from l.java AES_ECB decrypt
     static byte[] k(byte[] bArr, byte[] bArr2) throws IOException {
         Key secretKeySpec = new SecretKeySpec(bArr2, "AES");
         try {
@@ -226,7 +226,7 @@ public class abematvdec {
 //get 'https://api.abema.io/v1/media/token?
 //appVersion=v6.0.2&osLang= &osName=pc&osTimezone= &osVersion=1.0.0' 
 //-H 'authorization: bearer token' 
-
+// get {token } -> mediatoken
     public static void main(String[] args) {
         //v1/media/token
         //@Query("osName") String str, @Query("osVersion") String str2, 
@@ -235,7 +235,7 @@ public class abematvdec {
         //@Query("adId") String str7
         // a.ANDROID_CLIENT_TYPE -> android , bg.gor -> VERSION.RELEASE, bg.gos -> Locale.getDefault().toString();, 
         //bg.got -> TimeZone.getDefault().getID();, "tv.abema", "3.27.1", str
-        //{"osNmae":"android","osVersion":"6.0.1","osLang":"jp-JP","osTimezone":"Asia/Japan","appId":"tv.abema","appVersion":"3.27.1"}
+        //{"osName":"android","osVersion":"6.0.1","osLang":"jp-JP","osTimezone":"Asia/Japan","appId":"tv.abema","appVersion":"3.27.1"}
         //need authorization: see (LoginAccountManager and OAuthToken)
 
         // applicationkeysecret see UserApiClient and Secret (applicationKeySecret(jz.a(deviceId, f.b(a.aOP()))))

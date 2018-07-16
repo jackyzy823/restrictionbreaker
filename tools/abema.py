@@ -1,5 +1,4 @@
 import uuid
-from datetime import datetime,timedelta
 from base64 import urlsafe_b64encode
 import time
 
@@ -9,38 +8,9 @@ import hashlib
 import requests
 #Cipher
 
-deviceId = str(uuid.uuid4())
-
-def genTime():
-    d = datetime.now()
-    d = d.replace(year=2018,month=7,day=16,hour=16,minute=0,second=0,microsecond=0)
-    d += timedelta(hours=1)
-    return d
-
-'''
-                byte[] doFinal = instance.doFinal();
-                for (i2 = 0; i2 < cQ.getMonthValue(); i2++) {
-                    doFinal = instance.doFinal(doFinal);
-                }
- byte[] bytes = (Base64.encodeToString(doFinal, 11) + str).getBytes(C.UTF8_NAME);
-                    instance.reset();
-                    instance.update(bytes);
-                    doFinal = instance.doFinal();
-                    for (i2 = 0; i2 < cQ.getDayOfMonth() % 5; i2++) {
-                        doFinal = instance.doFinal(doFinal);
-                    }
-                        bytes = (Base64.encodeToString(doFinal, 11) + cQ.g(q.eCu)).getBytes(C.UTF8_NAME);
-                        instance.reset();
-                        instance.update(bytes);
-                        bytes = instance.doFinal();
-                        while (i < cQ.getHour() % 5) {
-                            bytes = instance.doFinal(bytes);
-                            i++;
-                        }
-                        return Base64.encodeToString(bytes, 11);
 
 
-                '''
+
 '''
 date: Mon, 16 Jul 2018 08:07:56 GMT
 applicationKeySecret
@@ -51,45 +21,108 @@ deviceId
 "401551ae-086f-45e6-96b3-dfcc176982c7"
 
 '''
+# Note: base64 difference
 #   NO_PADDING -> remove =
-#   URLSAFE ->
-def generateApplicationKeySecret(deviceId, timeinfo):
-    h = hmac.new("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe",digestmod=hashlib.sha256)
-    h.update("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe")
+#   URLSAFE -> + and / ->
+# Note: UTC time need
+# Note Java doFinal -> python 
+def generateApplicationKeySecret(deviceId):
+    ts_1hour = (int(time.time())+ 60*60 ) /3600*3600  # plus 1 hour and drop minute and secs
+    time_struct = time.gmtime(ts_1hour)   
+
+    secretkey = "v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe"
+
+    h = hmac.new(secretkey,digestmod=hashlib.sha256)
+    h.update(secretkey)
     tmp = h.digest()
-    print tmp.encode('hex')
-    for i in range(timeinfo.month):
-        h = hmac.new("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe",digestmod=hashlib.sha256)
+    for i in range(time_struct.tm_mon):
+        h = hmac.new(secretkey,digestmod=hashlib.sha256)
         h.update(tmp)
         tmp = h.digest()
-        print tmp.encode('hex')
     # step 2
-    h = hmac.new("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe",digestmod=hashlib.sha256)
-    h.update(urlsafe_b64encode(tmp).replace("=","")+deviceId)
+    h = hmac.new(secretkey,digestmod=hashlib.sha256)
+    h.update(urlsafe_b64encode(tmp).rstrip("=")+deviceId)
     tmp = h.digest()
-    for i in range(timeinfo.day % 5):
-        h = hmac.new("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe",digestmod=hashlib.sha256)
+    for i in range(time_struct.tm_mday % 5):
+        h = hmac.new(secretkey,digestmod=hashlib.sha256)
         h.update(tmp)
         tmp = h.digest()
     #step 3
-    print "before timestamp",tmp.encode('hex')
-    h = hmac.new("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe",digestmod=hashlib.sha256)
-    print urlsafe_b64encode(tmp)+ str(int(time.mktime(timeinfo.timetuple())))
-    h.update(urlsafe_b64encode(tmp).replace("=","")+ str(int(time.mktime(timeinfo.timetuple())))) # no .0 
+    h = hmac.new(secretkey,digestmod=hashlib.sha256)
+    h.update(urlsafe_b64encode(tmp).rstrip("=")+  str(ts_1hour)) # no .0 
     tmp = h.digest()
-    print "before hour",tmp.encode('hex')
 
-    for i in range(8 % 5): # should be utc hour!!!
-        h = hmac.new("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe",digestmod=hashlib.sha256) 
+    for i in range(time_struct.tm_hour  % 5): # should be utc hour!!!
+        h = hmac.new(secretkey,digestmod=hashlib.sha256) 
         h.update(tmp)
         tmp = h.digest()
-    return urlsafe_b64encode(tmp)
 
-generateApplicationKeySecret("401551ae-086f-45e6-96b3-dfcc176982c7",genTime())
+    return urlsafe_b64encode(tmp).rstrip("=")
+
+def getVideoKeyFromTicket(ticket):
+    deviceId = str(uuid.uuid4())
+    res = requests.post("https://api.abema.io/v1/users",json={"deviceId":deviceId,"applicationKeySecret":generateApplicationKeySecret(deviceId)})
+    usertoken = res.json()['token'] #for media bearer
+
+    # or pc params -> appVersion=v6.0.2&osLang=ja-JP&osName=pc&osTimezone=Asia%2fTokyo&osVersion=1.0.0' 
+    res = requests.get("https://api.abema.io/v1/media/token" ,params = {"osName":"android","osVersion":"6.0.1","osLang":"ja_JP","osTimezone":"Asia/Tokyo","appId":"tv.abema","appVersion":"3.27.1" } ,headers={"Authorization" :"Bearer "+usertoken})
+    print res.status_code
+    mediatoken = res.json()['token']
+
+    # m3u8 = requests.get("https://linear-abematv.akamaized.net/channel/abema-anime/1080/playlist.m3u8",headers={"X-Forwarded-For":"1.0.16.0"}).content
+    # # print m3u8
+
+    # import re
+    # ticket = re.findall(r"abematv-license://(.*)\"",m3u8)[0]
+
+    #do cid key req
+    res = requests.post("https://license.abema.io/abematv-hls",params={"t":mediatoken},json={"kv":"a","lt":ticket})
+    print res.status_code
+    print res.json()
+
+    cid = res.json()['cid']
+    key = res.json()['k']
 
 
+    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
+    import struct
+    encdata = struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
+    print encdata.encode('hex')
+    # from RC4 dec(IV:DB98A8E7CECA3424D975280F90BD03EE data:D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB)
+    # Crypto.Cipher.ARC4.new('DB98A8E7CECA3424D975280F90BD03EE'.decode('hex')).decrypt('D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB'.decode('hex')).encode('hex')
+    # res: 3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E
+    h =hmac.new("3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E".decode("hex"),cid+deviceId ,digestmod=hashlib.sha256)
+    enckey = h.digest() #bin mode
+    print enckey.encode('hex')
+    from Crypto.Cipher import AES
 
-# requests.post("https://api.abema.io/v1/users",data={"deviceId":deviceId,"applicationKeySecret":})
+    aes = AES.new(enckey,AES.MODE_ECB)
+    decKey = aes.decrypt(encdata)
+    print decKey.encode("hex")
+    return decKey
+
+
+# abematv-license://2cxBntsqwKGrFBrCKAta57LGXMreD57Djdh2N7NH7TqF
+import requests
+
+s = requests.session()
+s.mount("abematv-license:")
+
+s.get("abematv-license://2cxBntsqwKGrFBrCKAta57LGXMreD57Djdh2N7NH7TqF",AbemaTVLicenseAdapter())
+
+
+class AbemaTVLicenseAdapter(requests.adapter.BaseAdapter):
+    def send(self, request, stream=False, timeout=None, verify=True,
+             cert=None, proxies=None):
+        print request.url
+        resp = requests.Response()
+
+        pass
+    def close(self):
+        pass
+
+    pass
+
 '''
 refernece java base64 from  https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/util/Base64.java
 import java.io.UnsupportedEncodingException;
@@ -180,4 +213,148 @@ public class Test {
     }
 }
 
+'''
+
+'''For streamlink
+import re
+
+from streamlink.plugin import Plugin
+from streamlink.plugin.plugin import parse_url_params
+from streamlink.utils import update_scheme
+from streamlink.stream import HLSStream
+from requests.adapters import BaseAdapter
+
+import uuid
+from base64 import urlsafe_b64encode
+import time
+
+import hmac
+import hashlib
+
+import requests
+
+
+def generateApplicationKeySecret(deviceId):
+    ts_1hour = (int(time.time())+ 60*60 ) /3600*3600  # plus 1 hour and drop minute and secs
+    time_struct = time.gmtime(ts_1hour)   
+
+    secretkey = "v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe"
+
+    h = hmac.new(secretkey,digestmod=hashlib.sha256)
+    h.update(secretkey)
+    tmp = h.digest()
+    for i in range(time_struct.tm_mon):
+        h = hmac.new(secretkey,digestmod=hashlib.sha256)
+        h.update(tmp)
+        tmp = h.digest()
+    # step 2
+    h = hmac.new(secretkey,digestmod=hashlib.sha256)
+    h.update(urlsafe_b64encode(tmp).rstrip("=")+deviceId)
+    tmp = h.digest()
+    for i in range(time_struct.tm_mday % 5):
+        h = hmac.new(secretkey,digestmod=hashlib.sha256)
+        h.update(tmp)
+        tmp = h.digest()
+    #step 3
+    h = hmac.new(secretkey,digestmod=hashlib.sha256)
+    h.update(urlsafe_b64encode(tmp).rstrip("=")+  str(ts_1hour)) # no .0 
+    tmp = h.digest()
+
+    for i in range(time_struct.tm_hour  % 5): # should be utc hour!!!
+        h = hmac.new(secretkey,digestmod=hashlib.sha256) 
+        h.update(tmp)
+        tmp = h.digest()
+
+    return urlsafe_b64encode(tmp).rstrip("=")
+
+def getVideoKeyFromTicket(ticket):
+    deviceId = str(uuid.uuid4())
+    res = requests.post("https://api.abema.io/v1/users",json={"deviceId":deviceId,"applicationKeySecret":generateApplicationKeySecret(deviceId)})
+    usertoken = res.json()['token'] #for media bearer
+
+    # or pc params -> appVersion=v6.0.2&osLang=ja-JP&osName=pc&osTimezone=Asia%2fTokyo&osVersion=1.0.0' 
+    res = requests.get("https://api.abema.io/v1/media/token" ,params = {"osName":"android","osVersion":"6.0.1","osLang":"ja_JP","osTimezone":"Asia/Tokyo","appId":"tv.abema","appVersion":"3.27.1" } ,headers={"Authorization" :"Bearer "+usertoken})
+    # print res.status_code
+    mediatoken = res.json()['token']
+
+    # m3u8 = requests.get("https://linear-abematv.akamaized.net/channel/abema-anime/1080/playlist.m3u8",headers={"X-Forwarded-For":"1.0.16.0"}).content
+    # # print m3u8
+
+    # import re
+    # ticket = re.findall(r"abematv-license://(.*)\"",m3u8)[0]
+
+    #do cid key req
+    res = requests.post("https://license.abema.io/abematv-hls",params={"t":mediatoken},json={"kv":"a","lt":ticket})
+    # print res.status_code
+    # print res.json()
+
+    cid = res.json()['cid']
+    key = res.json()['k']
+
+
+    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
+    import struct
+    encdata = struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
+    # print encdata.encode('hex')
+    # from RC4 dec(IV:DB98A8E7CECA3424D975280F90BD03EE data:D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB)
+    # Crypto.Cipher.ARC4.new('DB98A8E7CECA3424D975280F90BD03EE'.decode('hex')).decrypt('D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB'.decode('hex')).encode('hex')
+    # res: 3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E
+    h =hmac.new("3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E".decode("hex"),cid+deviceId ,digestmod=hashlib.sha256)
+    enckey = h.digest() #bin mode
+    # print enckey.encode('hex')
+    from Crypto.Cipher import AES
+
+    aes = AES.new(enckey,AES.MODE_ECB)
+    decKey = aes.decrypt(encdata)
+    # print decKey.encode("hex")
+    return decKey
+
+
+
+
+class AbemaTVLicenseAdapter(BaseAdapter):
+
+    def send(self, request, stream=False, timeout=None, verify=True,
+             cert=None, proxies=None):
+        # print request.url
+        resp = requests.Response()
+        resp.status_code = 200
+        resp._content = getVideoKeyFromTicket(ticket = re.findall(r"abematv-license://(.*)",request.url)[0])
+        # print "My response ", resp.raw.encode('hex')
+        return resp
+
+        pass
+    def close(self):
+        pass
+
+    pass
+
+class AbemaTV(Plugin):
+    _url_re = re.compile(r"https://abema.tv/now-on-air/(.*)")
+
+    @classmethod
+    def can_handle_url(cls, url):
+        return cls._url_re.match(url) is not None
+
+    def __init__(self, url):
+        super(AbemaTV, self).__init__(url)
+
+    def _get_streams(self):
+        channels = self.session.http.get("https://api.abema.io/v1/channels").json()["channels"]
+        selectedchannel =  self._url_re.match(self.url).group(1)
+        for i in channels:
+            if selectedchannel == i["id"]:
+                break
+        playlisturl = i["playback"]["hls"]
+        self.logger.debug("CHANNEL URL={0}; ", playlisturl)
+        
+        self.session.http.mount("abematv-license",AbemaTVLicenseAdapter())
+
+        streams = HLSStream.parse_variant_playlist(self.session, playlisturl)
+        if not streams:
+            return {"live": HLSStream(self.session, playlisturl)}
+        else:
+            return streams
+
+__plugin__ = AbemaTV
 '''
