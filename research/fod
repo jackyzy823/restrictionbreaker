@@ -49,3 +49,6 @@ http://i.fod.fujitv.co.jp/fodapp/foddoga/data/plus7/program_navi.json
 "https://fod.fujitv.co.jp/api/premium/get_program_view.aspx?lg=0&luid=programid"
 
 
+
+
+if( pr.indexOf('.fujitv.co.jp') == -1 && pr.indexOf('.houdoukyoku.jp') == -1 && pr.indexOf('.yahoo.co.jp') == -1 && pr.indexOf('tver.jp') == -1 && pr.indexOf('dogatch.jp') == -1 && pr.indexOf('ktv.jp') == -1 && pr.indexOf('tokai') == -1 && pr.indexOf('hanzaishokogun') == -1 && pr.indexOf('www.ai-nori.net') == -1 && pr.indexOf('one-piece.com') == -1){

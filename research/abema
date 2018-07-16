@@ -218,24 +218,55 @@ public class abematvdec {
 
 
 
-	public static void main(String[] args) {
-		// mediatoken relateship with deviceid?
-		// lt -> ticket abema-license:// <lt>
-		// https://license.abema.io/abematv-hls?t=<mediatoken> POST: {lt:lt ....}
-
-		String contentkey = null;
-		String contentid = null;
-		String deviceid = null ;
-		try{
-			k ( decode(contentkey) , a((contentid+deviceid).getBytes(),bEF()) );
-			
-		}catch(IOException e){
-
-		}
-		
+//POST https://api.abema.io/v1/users
+//with json "deviceId":" ","applicationKeySecret":" "}
+// get: {"profile":{"userId":" ","createdAt": },"token":" "}
 
 
+//get 'https://api.abema.io/v1/media/token?
+//appVersion=v6.0.2&osLang= &osName=pc&osTimezone= &osVersion=1.0.0' 
+//-H 'authorization: bearer token' 
 
-	}
+    public static void main(String[] args) {
+        //v1/media/token
+        //@Query("osName") String str, @Query("osVersion") String str2, 
+        //@Query("osLang") String str3, @Query("osTimezone") String str4,
+        //@Query("appId") String str5, @Query("appVersion") String str6, 
+        //@Query("adId") String str7
+        // a.ANDROID_CLIENT_TYPE -> android , bg.gor -> VERSION.RELEASE, bg.gos -> Locale.getDefault().toString();, 
+        //bg.got -> TimeZone.getDefault().getID();, "tv.abema", "3.27.1", str
+        //{"osNmae":"android","osVersion":"6.0.1","osLang":"jp-JP","osTimezone":"Asia/Japan","appId":"tv.abema","appVersion":"3.27.1"}
+        //need authorization: see (LoginAccountManager and OAuthToken)
+
+        // applicationkeysecret see UserApiClient and Secret (applicationKeySecret(jz.a(deviceId, f.b(a.aOP()))))
+        // deviceid and localdatetime +1 hours and drop minute and seconds?
+        //
+
+        // mediatoken relateship with deviceid? (DeviceManager implments Deviceinfo)
+        // yes -> in create token
+        // deviceid = UUID.randomUUID().toString()
+        // and the crypto has  relationship with uuid
+        // lt -> ticket abema-license:// <lt> and kv ( kv = "a"  from MediaLicenseApiClient.smali)
+        // https://license.abema.io/abematv-hls?t=<mediatoken> POST: {lt:lt ....}
+
+        String contentkey = null;
+        String contentid = null;
+        String deviceid = null ;
+        try{
+            // System.out.printf("bEF->spec:%s\n",DatatypeConverter.printHexBinary(bEF().getEncoded()));
+            // System.out.printf("Try:%s\n",DatatypeConverter.printHexBinary(decode(" ")));
+            //{"cid":"386-71_s2_p1","k":" "}
+            byte[] res = k ( decode(" ") , a(("386-71_s2_p1"+UUID.randomUUID().toString()).getBytes(),bEF()) );
+            System.out.printf("Res:%s\n",DatatypeConverter.printHexBinary(res));
+
+        }catch(IOException e){
+
+        }
+        
+
+
+
+    }
+
 
 }
