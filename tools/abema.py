@@ -4,6 +4,7 @@ import time
 
 import hmac
 import hashlib
+import re
 
 import requests
 #Cipher
@@ -68,7 +69,7 @@ def getVideoKeyFromTicket(ticket):
     # res = requests.get("https://api.abema.io/v1/media/token" ,params = {"osName":"android","osVersion":"6.0.1","osLang":"ja_JP","osTimezone":"Asia/Tokyo","appId":"tv.abema","appVersion":"3.27.1" } ,headers={"Authorization" :"Bearer "+usertoken})
     res = requests.get("https://api.abema.io/v1/media/token" ,params = {"osName":"pc","osVersion":"1.0.0","osLang":"ja_JP","osTimezone":"Asia/Tokyo","appVersion":"v6.0.2" } ,headers={"Authorization" :"Bearer "+usertoken})
 
-    print res.status_code
+    # print res.status_code
     mediatoken = res.json()['token']
 
     # m3u8 = requests.get("https://linear-abematv.akamaized.net/channel/abema-anime/1080/playlist.m3u8",headers={"X-Forwarded-For":"1.0.16.0"}).content
@@ -84,8 +85,8 @@ def getVideoKeyFromTicket(ticket):
     # kg -> xhrp.js generation?
     # res = requests.post("https://license.abema.io/abematv-hls",params={"t":mediatoken},json={"kv":"wd" , "kg":376,"lt":ticket})
 
-    print res.status_code
-    print res.json()
+    # print res.status_code
+    # print res.json()
 
     cid = res.json()['cid']
     key = res.json()['k']
@@ -94,21 +95,31 @@ def getVideoKeyFromTicket(ticket):
     res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
     import struct
     encdata = struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
-    print encdata.encode('hex')
+    # print encdata.encode('hex')
     # from RC4 dec(IV:DB98A8E7CECA3424D975280F90BD03EE data:D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB)
     # Crypto.Cipher.ARC4.new('DB98A8E7CECA3424D975280F90BD03EE'.decode('hex')).decrypt('D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB'.decode('hex')).encode('hex')
     # res: 3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E
     h =hmac.new("3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E".decode("hex"),cid+deviceId ,digestmod=hashlib.sha256)
     enckey = h.digest() #bin mode
-    print enckey.encode('hex')
+    # print enckey.encode('hex')
     from Crypto.Cipher import AES
 
     aes = AES.new(enckey,AES.MODE_ECB)
     decKey = aes.decrypt(encdata)
-    print decKey.encode("hex")
+    # print decKey.encode("hex")
     return decKey
 
-getVideoKeyFromTicket("2cxBntsqwKGrFBrCKAta57LGXMreD57Djdh2N7NH7TqF")
+for channel in requests.get("https://api.abema.io/v1/channels").json()["channels"]:
+    m3u8link = channel["playback"]["hls"].replace("playlist.m3u8",'1080/playlist.m3u8')
+    while True:
+        m3u8 = requests.get(m3u8link,headers={"X-Forwarded-For":"1.0.16.0"}).content
+        res = re.findall(r"abematv-license://(.*)\"",m3u8)
+        if  len(res) != 0:
+            # print channel["id"].ljust(20,"."),": No key"
+            break
+    ticket = res[0]
+    vkey = getVideoKeyFromTicket(ticket)
+    print channel["id"].ljust(20,"."),":",ticket,vkey.encode('hex')
 
 '''
 refernece java base64 from  https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/util/Base64.java
