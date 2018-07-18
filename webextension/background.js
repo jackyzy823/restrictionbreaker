@@ -111,6 +111,7 @@ chrome.webRequest.onBeforeRequest.addListener(function(req){
 // has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource.
 // FAILED BECAUSE OF CORS (OPTIONS) what if req.method ==get ? (failed too)
 //may do this via javascript ?
+// see AbemaTVChromeExtension/xhr-injection.js . they custom xhr to change resolution
 // chrome.webRequest.onBeforeRequest.addListener(function(req){
 //   if(req.method.toLowerCase()=='get'){
 //     console.log("force replace!!!!")
