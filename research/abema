@@ -418,3 +418,30 @@ c(E, t, j) (kid,abm_userid,second)
                     return m = s(u, m),
                     o.d(m, l)
                 };
+
+
+'''''Abema CM and  DISCONTINUITY problem
+#EXTM3U
+#EXT-X-VERSION:3
+#EXT-X-TARGETDURATION:6
+#EXT-X-MEDIA-SEQUENCE:1701
+#EXT-X-DISCONTINUITY-SEQUENCE:164
+#EXT-X-KEY:METHOD=NONE
+#EXTINF:5.0,
+https://linear-abematv.akamaized.net/tsad/everybody-anime2/26/720/23YENzdUd3j7JQm9.ts
+#EXTINF:5.0,
+https://linear-abematv.akamaized.net/tsad/everybody-anime2/26/720/23YENzdUd3j7JQm8.ts
+#EXTINF:5.0,
+https://linear-abematv.akamaized.net/tsad/everybody-anime2/26/720/23YENzdUd3j7JQm7.ts
+#EXT-X-DISCONTINUITY
+#EXT-X-KEY:METHOD=AES-128,URI="abematv-license://Ca17a5ow8EMdPHgcyAFfGFWZNW6QPYswHqjo6DuJwFGv",IV=0xdbb88df3ebc2639453fbf056d60d67ff
+#EXTINF:5.005000,
+https://linear-abematv.akamaized.net/ts/CZrr6X2NavDXUT/h264/720/ak5jiSnmz9Z.ts
+
+
+CM no abm key and url with tsad and  DISCONTINUITY-SEQUENCE++
+
+
+TODO:
+use ffmpeg + custom protocol (https://blog.csdn.net/wu_cai_/article/details/80276906) to 
+ffmpeg/libavformat/hls.c  -> open_url()
