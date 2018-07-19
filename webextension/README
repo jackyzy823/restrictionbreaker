@@ -30,3 +30,9 @@ TODO:
 
 
 
+Host permission Requirment:
+	Common :
+		*.akamaized.net -> means vod-abematv.akamaized.net linear-abematv.akamaized.net  abematv.akamaized.net
+	For Chrome:
+
+	For Firefox:

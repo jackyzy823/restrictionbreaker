@@ -109,17 +109,20 @@ def getVideoKeyFromTicket(ticket):
     # print decKey.encode("hex")
     return decKey
 
+print getVideoKeyFromTicket("2cxBntsqwKGrFBrCKAta57LGXMreD57Djdh2N7NH7TqF").encode('hex')
 for channel in requests.get("https://api.abema.io/v1/channels").json()["channels"]:
     m3u8link = channel["playback"]["hls"].replace("playlist.m3u8",'1080/playlist.m3u8')
-    while True:
+    for i in range(10):
         m3u8 = requests.get(m3u8link,headers={"X-Forwarded-For":"1.0.16.0"}).content
         res = re.findall(r"abematv-license://(.*)\"",m3u8)
         if  len(res) != 0:
+            ticket = res[0]
+            vkey = getVideoKeyFromTicket(ticket)
+            print channel["id"].ljust(20,"."),":",ticket,vkey.encode('hex')
             # print channel["id"].ljust(20,"."),": No key"
             break
-    ticket = res[0]
-    vkey = getVideoKeyFromTicket(ticket)
-    print channel["id"].ljust(20,"."),":",ticket,vkey.encode('hex')
+    else:
+        print channel["id"].ljust(20,"."),": No key"
 
 '''
 refernece java base64 from  https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/util/Base64.java
@@ -326,7 +329,9 @@ class AbemaTVLicenseAdapter(BaseAdapter):
     pass
 
 class AbemaTV(Plugin):
-    _url_re = re.compile(r"https://abema.tv/now-on-air/(.*)")
+    _url_re = re.compile(r"https://abema\.tv/now-on-air/(?P<onair>.+)|https://abema\.tv/video/episode/(?P<episode>.+)|https://abema\.tv/channels/.+?/slots/(?P<slot>.+)")
+    #https://abema.tv/video/episode/<id>  -> https://vod-abematv.akamaized.net/program/<id>/playlist.m3u8
+    #https://abema.tv/channels/<type>/slots/<id> -> https://vod-abematv.akamaized.net/slot/<id>/playlist.m3u8
 
     @classmethod
     def can_handle_url(cls, url):
@@ -336,15 +341,25 @@ class AbemaTV(Plugin):
         super(AbemaTV, self).__init__(url)
 
     def _get_streams(self):
-        channels = self.session.http.get("https://api.abema.io/v1/channels").json()["channels"]
-        selectedchannel =  self._url_re.match(self.url).group(1)
-        for i in channels:
-            if selectedchannel == i["id"]:
-                break
-        playlisturl = i["playback"]["hls"]
-        self.logger.debug("CHANNEL URL={0}; ", playlisturl)
+        url, params = parse_url_params(self.url)
+        matchResult = self._url_re.match(url)
+        if matchResult.group("onair"):
+            channels = self.session.http.get("https://api.abema.io/v1/channels").json()["channels"]
+            for i in channels:
+                if matchResult.group("onair") == i["id"]:
+                    break
+            else:
+                from streamlink.exceptions import NoStreamsError
+                raise NoStreamError 
+            playlisturl = i["playback"]["hls"]
+        elif matchResult.group("episode"):
+            playlisturl = "https://vod-abematv.akamaized.net/program/%s/playlist.m3u8"%(matchResult.group("episode"))
+        elif matchResult.group("slot"):
+            playlisturl = "https://vod-abematv.akamaized.net/slot/%s/playlist.m3u8"%(matchResult.group("slot"))
+
+        self.logger.debug("Playlist URL={0}; ", playlisturl)
         
-        self.session.http.mount("abematv-license",AbemaTVLicenseAdapter(self.session))
+        self.session.http.mount("abematv-license://",AbemaTVLicenseAdapter(self.session))
 
         streams = HLSStream.parse_variant_playlist(self.session, playlisturl)
         if not streams:

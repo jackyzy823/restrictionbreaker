@@ -17,8 +17,7 @@
       "*://*.stream.ne.jp/*",
       "*://*.fod.fujitv.co.jp/*",
       "*://*.abema.tv/*",
-      "*://linear-abematv.akamaized.net/*",
-      "*://abematv.akamaized.net/*",
+      "*://*.akamaized.net/*",
       "*://api.abema.io/*",
       "*://www.tv-asahi.co.jp/*",
       "*://*.dmm.co.jp/*"
