@@ -5,12 +5,11 @@ import time
 import hmac
 import hashlib
 import re
+import struct
 
 import requests
-#Cipher
 
-
-
+from Crypto.Cipher import ARC4 ,Blowfish ,AES
 
 '''
 date: Mon, 16 Jul 2018 08:07:56 GMT
@@ -60,10 +59,88 @@ def generateApplicationKeySecret(deviceId):
 
     return urlsafe_b64encode(tmp).rstrip("=")
 
-def decPcKey(key):
+def to_bigint256_array(key):
     res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
-    import struct
-    struct.pack('>QQQQ',res >> 192, (res>>128 ) & 0xffffffffffffffff ,(res>>64)& 0xffffffffffffffff ,res & 0xffffffffffffffff )
+    return struct.pack('>QQQQ',res >> 192, (res>>128 ) & 0xffffffffffffffff ,(res>>64)& 0xffffffffffffffff ,res & 0xffffffffffffffff )
+
+def to_bigint128_array(key):
+    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
+    return struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
+
+
+RC4DATA = [[200, 196, 157, 49, 219, 232, 69, 76, 83, 241, 90, 229, 150, 242, 92, 15, 84, 148, 229, 112, 54, 1, 119, 2, 169, 57, 211, 105, 136, 202, 103, 168], [234, 169, 154, 104, 251, 227, 123, 14, 69, 153, 122, 248, 216, 214, 90, 81, 11, 135, 195, 113, 29, 23, 116, 2, 161, 38, 253, 115, 142, 200, 42, 189], [200, 165, 201, 110, 242, 224, 40, 65, 59, 242, 81, 195, 162, 188, 101, 3, 79, 254, 234, 10, 16, 95, 72, 35, 164, 67, 164, 71, 240, 227, 121, 199], [245, 130, 172, 48, 216, 131, 115, 127, 66, 236, 28, 185, 136, 252, 90, 79, 119, 243, 179, 12, 72, 39, 98, 61, 137, 71, 249, 115, 214, 177, 21, 172], [89, 223, 151, 248, 170, 122, 131, 80, 144, 118, 56, 163, 241, 252, 134, 140, 142, 29, 185, 213, 230, 84, 127, 54, 179, 36, 10, 155, 207, 175, 138, 50], [14, 100, 3, 93, 159, 22, 163, 57, 95, 210, 206, 203, 142, 255, 17, 137, 104]]
+RC4KEY = [44, 128, 188, 10, 35, 20]
+
+def getMpdKey(mpd):
+    # mpdxml = requests.get(mpd,headers={"X-Forwarded-For":"1.0.16.0"}).content #thi api has no referer with media token 
+    # # kid is referer to the program displaying
+    # kidraw = re.findall(r'''cenc:default_KID=\"(.+?)\"''',mpdxml)[0]
+    # # from string uuid -> byte uuid -> b64_url_nopadding uuid
+    # kid =urlsafe_b64encode(uuid.UUID(kidraw).bytes).rstrip('=')
+    # print "Kid:",kid
+
+    # deviceId = str(uuid.uuid4())
+    # res = requests.post("https://api.abema.io/v1/users",json={"deviceId":deviceId,"applicationKeySecret":generateApplicationKeySecret(deviceId)})
+    # usertoken = res.json()['token'] #for media bearer
+    # userid = res.json()['profile']["userId"]
+    # print "userid:",userid
+    # print "usertoken",usertoken
+
+    # res = requests.get("https://api.abema.io/v1/media/token" ,params = {"osName":"pc","osVersion":"1.0.0","osLang":"ja_JP","osTimezone":"Asia/Tokyo","appVersion":"v6.0.2" } ,headers={"Authorization" :"Bearer "+usertoken})
+
+    # mediatoken = res.json()['token']
+
+    # res = requests.post("https://license.abema.io/abematv",params={"t":mediatoken},json={"kids":[kid],"type":"temporary"})
+
+    # k = res.json()['keys'][0]['k']
+    z = lambda x: map(ord,x)
+
+    userid = '8SsCekFjcC76wH'
+    kid = '8pYmPKncSemxp5pocv0U_w'
+    k = '7j5CagKQZiuR4zFNUup4YYTjQ9anVZwBwRQUp56qA8qc.7K8gSoxARgX2k2e6iYM9G25.f5eeba450bb544f348d32363b9dedb86'
+
+    (first,second,third) = k.split('.')
+    first_bytes = to_bigint256_array(first)
+    second_lastchar = second[-1] #  == "5" or "4" or others
+    second_rest = second[:-1]
+
+    INITHKEY = ARC4.new("".join(map(chr,RC4KEY))).encrypt("".join(map(chr,RC4DATA[4]))) # the 4th data from js
+    res1 = hmac.new(INITHKEY,kid+userid,hashlib.sha256).digest() #d
+    res2 = hmac.new(res1,userid,hashlib.sha256).digest() #p
+    res3 = hmac.new(res1,kid,hashlib.sha256).digest()  #m  # stilllll res1 !!!! 
+
+
+    KEY2 =  ARC4.new("".join(map(chr,RC4KEY))).encrypt("".join(map(chr,RC4DATA[5]))) # the 5th data from js
+
+    res4 = ARC4.new(KEY2).encrypt(res2) #h
+    res5 = ARC4.new(KEY2).encrypt(res3) #b
+
+
+    second_rest_bytes = to_bigint128_array(second_rest)
+    # print map(ord,second_rest_bytes)
+
+    res6 = ARC4.new(res5).encrypt(second_rest_bytes)
+    #sth with res6 res4 
+    
+    res7 = Blowfish.new(res4,Blowfish.MODE_ECB).decrypt(res6)
+
+    IV = third.decode('hex')
+    cipertext = res7 
+
+    aes = AES.new(cipertext,AES.MODE_CBC,IV=IV)
+
+    final = aes.decrypt(first_bytes)
+    padding = ord(final[-1])
+    print padding
+    final = final[:-1*padding]
+    final_utf8 =  "".join(map(chr,final))
+
+    #urlsafe_b64decode(final_utf8+"==") #EME use base64(key)
+    print map(ord,final)
+
+    # print map(ord,res7)
+    #following assert second_lastchar = '5'
+
 
 def getVideoKeyFromTicket(ticket):
     deviceId = str(uuid.uuid4())
@@ -116,20 +193,22 @@ def getVideoKeyFromTicket(ticket):
     # print decKey.encode("hex")
     return decKey
 
-print getVideoKeyFromTicket("2cxBntsqwKGrFBrCKAta57LGXMreD57Djdh2N7NH7TqF").encode('hex')
-for channel in requests.get("https://api.abema.io/v1/channels").json()["channels"]:
-    m3u8link = channel["playback"]["hls"].replace("playlist.m3u8",'1080/playlist.m3u8')
-    for i in range(10):
-        m3u8 = requests.get(m3u8link,headers={"X-Forwarded-For":"1.0.16.0"}).content
-        res = re.findall(r"abematv-license://(.*)\"",m3u8)
-        if  len(res) != 0:
-            ticket = res[0]
-            vkey = getVideoKeyFromTicket(ticket)
-            print channel["id"].ljust(20,"."),":",ticket,vkey.encode('hex')
-            # print channel["id"].ljust(20,"."),": No key"
-            break
-    else:
-        print channel["id"].ljust(20,"."),": No key"
+
+getMpdKey("https://linear-abematv.akamaized.net/channel/special-plus-2/manifest.mpd")
+# print getVideoKeyFromTicket("2cxBntsqwKGrFBrCKAta57LGXMreD57Djdh2N7NH7TqF").encode('hex')
+# for channel in requests.get("https://api.abema.io/v1/channels").json()["channels"]:
+#     m3u8link = channel["playback"]["hls"].replace("playlist.m3u8",'1080/playlist.m3u8')
+#     for i in range(10):
+#         m3u8 = requests.get(m3u8link,headers={"X-Forwarded-For":"1.0.16.0"}).content
+#         res = re.findall(r"abematv-license://(.*)\"",m3u8)
+#         if  len(res) != 0:
+#             ticket = res[0]
+#             vkey = getVideoKeyFromTicket(ticket)
+#             print channel["id"].ljust(20,"."),":",ticket,vkey.encode('hex')
+#             # print channel["id"].ljust(20,"."),": No key"
+#             break
+#     else:
+#         print channel["id"].ljust(20,"."),": No key"
 
 '''
 refernece java base64 from  https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/util/Base64.java

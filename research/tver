@@ -113,7 +113,9 @@ How to download
 1. streamlink
 Note: only support m3u8 ,do not support dash .Parallel Download
 Requirement : pip install streamlink pycrypto
-    streamlink "hlsvariant://http://<m3u8link>" best  --hls-segment-threads 10 -o <result mp4> 
+    streamlink "http://<m3u8link>" best  --hls-segment-threads 10 -o <result mp4> 
+Issue:No sound?
+
 
 2. ffmpeg
 Note: support m3u8 and dash, pick best quality manually via program id or stream id. Single thread download

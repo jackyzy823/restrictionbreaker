@@ -289,7 +289,7 @@ https://alphahinex.github.io/2015/12/31/how-to-encrypt-mp4-using-clearkey-and-pl
 https://simpl.info/eme/clearkey/ ->
 https://w3c.github.io/encrypted-media/
 
-default kid b0e011c8-4256-4d39-a37e-bcc4ce2fbeee -> urlsafeencode and  drop =
+default kid b0e011c8-4256-4d39-a37e-bcc4ce2fbeee  -> to bytes \xb0\xe0 ...-> urlsafeencode and  drop =
 {"keys":[{"kty":"oct","k":"CCtMHW1YWMjaXYMA8wErppGUqNsycPKmwhKohRtQSMs1.BgYPyd5vjjVJvw2Q5uPaif5.89101c22598d9e566c800ced10d90166","kid":"sOARyEJWTTmjfrzEzi--7g"}],"type":"temporary"}
 
 
