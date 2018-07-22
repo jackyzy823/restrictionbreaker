@@ -5,6 +5,10 @@
     '''https://abematv.akamaized.net/region --> 403 xml Access Denied'''
     '''https://api.abema.io/v1/ip/check  --> 403 {}'''  200 also {}  so redirecturl may not work for 307
 
+TODO: license abematv-hls cid -> can get epsoide from live 's cid???? can get slot from cid
+
+TODO reg -> transfer
+
 abema tv android
 
 v 3.27.1
@@ -221,7 +225,7 @@ public class abematvdec {
 //POST https://api.abema.io/v1/users
 //with json "deviceId":" ","applicationKeySecret":" "}
 // get: {"profile":{"userId":" ","createdAt": },"token":" "}
-
+token is JWT content : {dev: deviceid (uuid-string) , exp:expire time ,iss:abema.io/v1 ,sub: userid}
 
 //get 'https://api.abema.io/v1/media/token?
 //appVersion=v6.0.2&osLang= &osName=pc&osTimezone= &osVersion=1.0.0' 
@@ -445,3 +449,6 @@ CM no abm key and url with tsad and  DISCONTINUITY-SEQUENCE++
 TODO:
 use ffmpeg + custom protocol (https://blog.csdn.net/wu_cai_/article/details/80276906) to 
 ffmpeg/libavformat/hls.c  -> open_url()
+
+
+https://abema.tv/ddd77f68cb459087c695.app.js traceversion: update 7/20

@@ -1064,11 +1064,11 @@ var _0xbd1e = function(_0x5a4708, _0x5a609e) {
             }
               , _0x572eda = function(_0x2c0843, _0x516bf9, _0x168d2d) { //cid,uid,krest
                 var _0x1d9fc5 = JSON['parse']('{\x22generation\x22:380,\x22key\x22:\x22ecf01b40363e4d1aa5fa096e5e5b616b\x22,\x22updatedAt\x22:\x221531978904\x22}')
-                  , _0x4fdd1f = _0x17628c['UvEfD'](_0x200c13, 0x100, _0x5d3f78(_0x1d9fc5['key']), _0x2c0843 + _0x516bf9) //res1 = hmacsha256(xhrkey,cid+uid) -> _0x200c13 (0x100, _0x5d3f78(_0x1d9fc5['key']), _0x2c0843 + _0x516bf9 )
+                  , _0x4fdd1f = _0x17628c['UvEfD'](_0x200c13, 0x100, _0x5d3f78(_0x1d9fc5['key']), _0x2c0843 + _0x516bf9) //res1 = hmacsha256(rc4(rc4[data4],xhrkey),cid+uid) -> _0x200c13 (0x100, _0x5d3f78(_0x1d9fc5['key']), _0x2c0843 + _0x516bf9 )
                   , _0x12c310 = _0x200c13(0x100, _0x4fdd1f, _0x516bf9) //res2 = hmacsha256 (res1, uid)
                   , _0xecca46 = _0x200c13(0x100, _0x4fdd1f, _0x2c0843);//res3 = hmacsha256 (res1 ,cid)
-                _0x12c310 = _0x17628c['kOcNT'](_0x161cc4, _0x17628c['kZTEa'](_0x50670d, 0x5), _0x1f4fdf(_0x12c310)), //res4 = _0x161cc4(_0x50670d( 0x5) ,  _0x1f4fdf(_0x12c310) ) -> rc4(INITKEY,res2)   INITKEY=  _0x50670d( 0x5) -> rc4 ( key, data[5]) 
-                _0xecca46 = _0x161cc4(_0x50670d(0x5), _0x1f4fdf(_0xecca46)); //res5 = rc4(INITKEY<rc4 key data5>, res3)
+                _0x12c310 = _0x17628c['kOcNT'](_0x161cc4, _0x17628c['kZTEa'](_0x50670d, 0x5), _0x1f4fdf(_0x12c310)), //res4 = _0x161cc4(_0x50670d( 0x5) ,  _0x1f4fdf(_0x12c310) ) -> rc4(KEY2,res2)   KEY2=  _0x50670d( 0x5) -> rc4 ( key, data[5]) 
+                _0xecca46 = _0x161cc4(_0x50670d(0x5), _0x1f4fdf(_0xecca46)); //res5 = rc4(KEY2<rc4 key data5>, res3)
                 var _0x3dd48e = _0x25d31d['d'](_0x168d2d);  // kreset -> tobigint?
                 return _0x3dd48e = _0x161cc4(_0xecca46, _0x3dd48e), //res6 = rc4(res5,kres_bytes)
                 _0x3dd48e = _0x2b3185['d'](_0x3dd48e, _0x12c310); //guess blowfish dec (res6,res4) or ?
