@@ -8,6 +8,15 @@
 TODO: license abematv-hls cid -> can get epsoide from live 's cid???? can get slot from cid
 
 TODO reg -> transfer
+PUT https://api.abema.io/v1/users/<userid>/oneTimePassword
+Auth token
+json {password:""}
+10mins  
+
+POST https://api.abema.io/v1/auth/oneTimePassword
+Auth tmpothertoken
+json {"userId","password"}
+resp:like reg -> {profile...token and subscription}
 
 abema tv android
 
