@@ -18,6 +18,10 @@ Auth tmpothertoken
 json {"userId","password"}
 resp:like reg -> {profile...token and subscription}
 
+userid changed dev id not change and token changed
+
+premium  may relate to mediatoken -> playback not allow
+
 abema tv android
 
 v 3.27.1
