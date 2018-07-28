@@ -14,6 +14,7 @@
       "*://*.tver.jp/*",
       "*://*.api.brightcove.com/*",
       "*://ad.auditude.com/*",
+      "*://pubads.g.doubleclick.net/*",
       "*://*.stream.ne.jp/*",
       "*://*.fod.fujitv.co.jp/*",
       "*://*.abema.tv/*",
@@ -25,6 +26,9 @@
   "background": {
     "scripts": ["iplib.js","background.js"]
 
+  },
+  "browser_action": {
+    "default_popup": "popup.html"
   }
 
 }

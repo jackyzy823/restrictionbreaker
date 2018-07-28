@@ -3,7 +3,6 @@ console.log("Your IP:"+CHOSENIP+",You can change it by reload the extension if s
 
 
 chrome.webRequest.onBeforeSendHeaders.addListener(function(req){
-  console.log("why firefox do not go into here? "+req.url);
   req.requestHeaders = req.requestHeaders.filter(function(x){
     return x.name.toLowerCase()!= 'x-forwarded-for';
   });
@@ -49,7 +48,7 @@ else{
   chrome.webRequest.onBeforeRequest.addListener(function(req){
     return {redirectUrl: 'data:text/xml,<?xml version="1.0"?> <vmap:VMAP xmlns:vmap="http://www.iab.net/videosuite/vmap" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:a="http://www.auditude.com/schema" version="1.0"> </vmap:VMAP>'}
     // return {cancel:true}
-  },{urls:["*://ad.auditude.com/adserver/vmap1*"]},["blocking"])
+  },{urls:["*://ad.auditude.com/adserver/vmap1*","*://pubads.g.doubleclick.net/gampad/ads*"]},["blocking"])
   // inspect and monkey patch xhr? https://www.moesif.com/blog/technical/apirequest/How-We-Captured-AJAX-Requests-with-a-Chrome-Extension/
   ////does not work because it needs resposeheaders for statistics ,but redirecturl cannot provide
   // const BCOV_POLICY = {

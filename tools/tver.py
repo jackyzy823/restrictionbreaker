@@ -142,7 +142,7 @@ def parsePage(url):
             resj["id"],res.content.decode("utf-8") ,resj["updated_at"]));
     except sqlite3.IntegrityError:
         print "duplicate: {0} ,{1}".format(url,reference_id)
-        # cur.execute("update tver set updated_at = ? where reference_id = ? and player_id = ? and id =?",(resj["updated_at"], reference_id , player_id ,resj["id"]) );
+        # cur.execute("update tver set updated_at = ? , json  = ? where reference_id = ? and player_id = ? and id =?",(resj["updated_at"],res.content.decode("utf-8"), reference_id , player_id ,resj["id"]) );
     db.commit()
     #source
     #res["name"] 
@@ -165,4 +165,21 @@ def findAll():
         for i in links:
             parsePage(i)
 
-findAll()
+# findAll()
+
+def updateJson():
+    cur.execute("select rowid,url from tver where done = 0 ; ")
+    res = cur.fetchall()
+    for i in res:
+        parsePage(i)
+
+
+def findAllByBrand():
+    for svc in ("tbs","tx", "ex", "ntv", "cx", "ktv", "mbs", "abc", "ytv"):
+        page = requests.get("https://tver.jp/{0}".format(svc)).content
+        urls = linkPattern.findall(page)
+        links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
+        for i in links:
+            parsePage(i) 
+
+findAllByBrand()
