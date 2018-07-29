@@ -37,13 +37,18 @@ while True:
             stream = source["src"]
         try:
             dirname = i[4].strip(u'\u3000').strip().encode("utf-8")
-            filename = i[5].strip(u'\u3000').strip().encode("utf-8")
+            filename = i[5].strip(u'\u3000').strip().encode("utf-8") #subtitle
             if len(filename) == 0:
-                filename = i[3].encode("utf-8").strip()
+                filename = i[3].encode("utf-8").strip() #name
+
             ret = subprocess.call(["streamlink",stream,"best","--hls-segment-threads","4","-o","./{0}.mp4".format(filename)])
             if ret!=0:
                 print "error downloading {0} and delete tmp file!!".format(i[7])
-                os.unlink("./{0}.mp4".format(filename))
+                try:
+                    os.unlink("./{0}.mp4".format(filename))
+                except Exception as e:
+                    print str(e)
+                    pass
                 cur.execute("update  tver set done=-2 where rowid = ?",(i[11],))
                 db.commit()                
                 continue

@@ -69,7 +69,10 @@ def parsePage(url):
     publisher_id = resdict['publisher_id']
     catchup_id = resdict['catchup_id']
     title = resdict["title"]
+    # title = title.strip('\xe3\x80\x80').strip()
+
     subtitle = resdict["subtitle"]
+    # subtitle = subtitle.strip('\xe3\x80\x80').strip()
     #.strip(u'\u3000').strip()
 
     if service == 'cx':
@@ -79,7 +82,6 @@ def parsePage(url):
         reference_id = ''
 
         #PUBLISHERID (like 4f50810003) FOR CX 
-        print publisher_id,len(publisher_id)
         if len(publisher_id) == 4:
             infoapi = "https://i.fod.fujitv.co.jp/plus7/web/{0}.html".format(publisher_id)
         else:
@@ -89,10 +91,14 @@ def parsePage(url):
         # print "url for cx :{0}".format(url)
         #https://i.fod.fujitv.co.jp/plus7/web/ + publisher_id[0:4]+"/"+publisher_id+".html"
         try:
-            name = re.findall(r'_wa\.parameters\[ \'title\' \] = \'(.*)\';',resp.content)[0].decode('utf-8')
+            name = re.findall(r'_wa\.parameters\[ \'title\' \] = \'(.*)\';',resp.content)[0].strip().decode('utf-8')
         except:
             print "url for cx :{0},{1}".format(url,infoapi)
-            name = "" 
+            name = ""
+
+        if len(subtitle) ==0:
+            subtitle = publisherid[-4:]
+
         meta = re.findall(r'else.*?{.*?meta = \'(.*?)\';',resp.content,re.S)[0]
         m3u8 = re.findall(r'url: "(.*?)",',resp.content)[0].replace('" + meta + "',meta)
         try:
@@ -180,6 +186,11 @@ def findAllByBrand():
         urls = linkPattern.findall(page)
         links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
         for i in links:
-            parsePage(i) 
+            try:
+                parsePage(i) 
+            except Exception as e:
+                print str(e)
+                print i
+
 
 findAllByBrand()
