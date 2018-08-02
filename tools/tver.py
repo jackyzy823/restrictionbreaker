@@ -57,6 +57,14 @@ BCOV_POLICY = {
  "5764318572001":"BCpkADawqM3KJLCLszoqY9KsoXN2Mz52LwKx4UXYRuEaUGr-o3JBSHmz_0WRicxowBj8vmbGRK_R7Us96DdBYuYEoVX9nHJ3DjkVW5-8L6bRmm6gck8IaeLLw21sM6mOHtNs9pIJPF6a4qSZlO6t_RlkpMY6sasaIaSYlarJ_8PFMPdxxfY6cGtJDnc"
 }
 
+def dbCommit(datatuple):
+    try:
+        cur.execute("insert into tver (`reference_id` , `service` , `player_id` , `name` , `title` , `subtitle` , `catchup_id` , `url` , `service_name` , `id` , `json` , `updated_at` , `done`) values (?,?,?,?,?,?,?,?,?,?,?,?,0);",
+        datatuple);
+    except sqlite3.IntegrityError:
+        print "duplicate: {0}: {1}".format(datatuple[1],datatuple[7])
+    db.commit()
+
 
 def parsePage(url):
     res = pagepattern.search(requests.get(url).content)
@@ -84,9 +92,11 @@ def parsePage(url):
         #PUBLISHERID (like 4f50810003) FOR CX 
         if len(publisher_id) == 4:
             infoapi = "https://i.fod.fujitv.co.jp/plus7/web/{0}.html".format(publisher_id)
+            resp = requests.get(infoapi)
+
         else:
             infoapi = "https://i.fod.fujitv.co.jp/plus7/web/{0}/{1}.html".format(publisher_id[0:4],publisher_id)
-        resp = requests.get(infoapi)
+            resp = requests.get(infoapi)
 
         # print "url for cx :{0}".format(url)
         #https://i.fod.fujitv.co.jp/plus7/web/ + publisher_id[0:4]+"/"+publisher_id+".html"
@@ -96,23 +106,26 @@ def parsePage(url):
             print "url for cx :{0},{1}".format(url,infoapi)
             name = ""
 
-        if len(subtitle) ==0:
-            subtitle = publisherid[-4:]
 
         meta = re.findall(r'else.*?{.*?meta = \'(.*?)\';',resp.content,re.S)[0]
         m3u8 = re.findall(r'url: "(.*?)",',resp.content)[0].replace('" + meta + "',meta)
-        try:
-            cur.execute("insert into tver (`reference_id` , `service` , `player_id` , `name` , `title` , `subtitle` , `catchup_id` , `url` , `service_name` , `id` , `json` ,`done`) values (?,?,?,?,?,?,?,?,?,?,? , 0);",
-            (reference_id,service,
-                player_id,name,
-                title.decode("utf-8").strip(u'\u3000').strip(),
-                subtitle.decode("utf-8").strip(u'\u3000').strip(),
-                catchup_id,url,servicename.decode("utf-8"),
-                publisher_id,m3u8));
-        except sqlite3.IntegrityError:
-            print "duplicate: CX: {0} ".format(url)
-        db.commit()
-        return
+        if len(publisher_id)==4:
+            publisher_id = re.findall("([^/]*?)"+meta,m3u8)[0]
+        if len(subtitle) ==0:
+            subtitle = publisherid[-4:]
+
+        return (reference_id,
+                service,
+                player_id,
+                name.replace("/","_"),
+                title.replace("/","_").decode("utf-8").strip(u'\u3000').strip(),
+                subtitle.replace("/","_").decode("utf-8").strip(u'\u3000').strip(),
+                catchup_id,
+                url,
+                servicename.decode("utf-8"),
+                publisher_id,
+                m3u8,
+                None)
 
         # raise ValueError("url for tx :{0}".format(url))
 
@@ -138,18 +151,18 @@ def parsePage(url):
     res = requests.get(playinfoapi,headers = {"X-Forwarded-For":"1.0.16.0","Accept":"application/json;pk={0}".format(policyKey)})
     resj = res.json()
     # import pdb;pdb.set_trace()
-    try:
-        cur.execute("insert into tver (`reference_id` , `service` , `player_id` , `name` , `title` , `subtitle` , `catchup_id` , `url` , `service_name` , `id` , `json` , `updated_at` , `done`) values (?,?,?,?,?,?,?,?,?,?,?,?,0);",
-        (reference_id,service,
-            player_id,resj['name'],
-            title.decode("utf-8").strip(u'\u3000').strip(),
-            subtitle.decode("utf-8").strip(u'\u3000').strip(),
-            catchup_id,url,servicename.decode("utf-8"),
-            resj["id"],res.content.decode("utf-8") ,resj["updated_at"]));
-    except sqlite3.IntegrityError:
-        print "duplicate: {0} ,{1}".format(url,reference_id)
-        # cur.execute("update tver set updated_at = ? , json  = ? where reference_id = ? and player_id = ? and id =?",(resj["updated_at"],res.content.decode("utf-8"), reference_id , player_id ,resj["id"]) );
-    db.commit()
+    return (reference_id,
+            service,
+            player_id,
+            resj['name'].replace("/","_"),
+            title.replace("/","_").decode("utf-8").strip(u'\u3000').strip(),
+            subtitle.replace("/","_").decode("utf-8").strip(u'\u3000').strip(),
+            catchup_id,
+            url,
+            servicename.decode("utf-8"),
+            resj["id"],
+            res.content.decode("utf-8") ,
+            resj["updated_at"])
     #source
     #res["name"] 
     # "published_at"
@@ -159,9 +172,10 @@ def parsePage(url):
 linkPattern = re.compile(r'''(\/episode\/.*?)\/?\"|(\/corner\/.*?)\/?\"|(\/feature\/.*?)\/?\"''')
 
 def filter_finish(urls): #set
-    cur.execute("select url from tver where url in ("+",".join("?"*len(urls))+");",tuple(urls))
-    m_url = map(lambda x : x[0] , cur.fetchall())
-    return urls - set(m_url)
+    return urls
+    # cur.execute("select url from tver where url in ("+",".join("?"*len(urls))+");",tuple(urls))
+    # m_url = map(lambda x : x[0] , cur.fetchall())
+    # return urls - set(m_url)
 
 def findAll():
     for url in ("/","/ranking", "/soon", "/drama", "/variety", "/documentary", "/anime", "/sport", "/other"):
@@ -169,16 +183,17 @@ def findAll():
         urls = linkPattern.findall(page)
         links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
         for i in links:
-            parsePage(i)
+            dbCommit(parsePage(i))
 
-# findAll()
+
 
 def updateJson():
-    cur.execute("select rowid,url from tver where done = 0 ; ")
+    cur.execute("select rowid,url from tver where done = -2 ; ")
     res = cur.fetchall()
     for i in res:
-        parsePage(i)
-
+        r = parsePage(i[1])
+        cur.execute("update tver set json=? ,done=0 where rowid= ?",(r[10],i[0]))
+    db.commit()
 
 def findAllByBrand():
     for svc in ("tbs","tx", "ex", "ntv", "cx", "ktv", "mbs", "abc", "ytv"):
@@ -187,10 +202,11 @@ def findAllByBrand():
         links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
         for i in links:
             try:
-                parsePage(i) 
+                dbCommit(parsePage(i))
             except Exception as e:
                 print str(e)
                 print i
 
-
+findAll()
 findAllByBrand()
+# updateJson()
