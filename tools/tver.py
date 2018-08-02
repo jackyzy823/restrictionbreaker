@@ -107,7 +107,7 @@ def parsePage(url):
             name = ""
 
 
-        meta = re.findall(r'else.*?{.*?meta = \'(.*?)\';',resp.content,re.S)[0]
+        meta = re.findall(r'else\s*?{\s*?meta = \'(.*?)\';',resp.content,re.S)[0]
         m3u8 = re.findall(r'url: "(.*?)",',resp.content)[0].replace('" + meta + "',meta)
         if len(publisher_id)==4:
             publisher_id = re.findall("([^/]*?)"+meta,m3u8)[0]
