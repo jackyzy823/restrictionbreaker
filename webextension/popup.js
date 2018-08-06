@@ -23,12 +23,40 @@ const BCOV_POLICY = {
 }
 
 
+function parseTver(res){
+  let title = res.groups.title;
+  let subtitle = res.groups.subtitle;
+  let player_id = res.groups.player_id;
+  let reference_id = res.groups.service == 'tx' ? res.groups.reference_id : "ref:"+res.groups.reference_id;
+  fetch("https://players.brightcove.net/"+ player_id +"/"+ res.groups.player_key +"_default/index.min.js")
+  .then((resp) =>{ return resp.text();}).then(function(text){
+    let mres,policyKey;
+    if((mres = policyKeyPattern.exec(text)) == null){
+      policyKey = BCOV_POLICY[player_id]
+    }else{
+      policyKey = mres.groups.policyKey
+    }
+    console.log(player_id,policyKey)
+    fetch("https://edge.api.brightcove.com/playback/v1/accounts/" + player_id + "/videos/" + reference_id, {
+        headers: {
+          "X-Forwarded-For": "1.0.16.0",
+          "Accept": "application/json;pk=" + policyKey
+        }
+      }).then(response => response.json()).then(function(json){
+        let sources = json["sources"];
+        let src = sources.filter(function(i){ return i["ext_x_version"] == 3 && i["src"].startsWith("http://")} )[0]["src"]
+        document.getElementById("result").innerHTML = "streamlink "+src+" best --hls-segment-threads 10 -o "+title +"_"+ subtitle+ ".mp4"
+      });
+  });
+}
+
+
 chrome.tabs.executeScript({
   code: "var tmpdata = {href : window.location.href,page : document.children[0].innerHTML};tmpdata",
   runAt: "document_start"
 }, function(results) {
   let href = results && results[0].href || '';
-  let page = results && results[0].page || ''; // #RAIDO or http://m3u8list   
+  let page = results && results[0].page || '';   
   if (/tver\.jp/.test(href)) {
     //parse
     let res;
@@ -39,34 +67,10 @@ chrome.tabs.executeScript({
       //TODO
       let infoapi = res.groups.publisher_id.length == 4 ? "https://i.fod.fujitv.co.jp/plus7/web/"+res.groups.publisher_id +".html" : "https://i.fod.fujitv.co.jp/plus7/web/"+res.groups.publisher_id.slice(0,4) +"/"+res.groups.publisher_id +".html" 
     }else{
-      let title = res.groups.title;
-      let subtitle = res.groups.subtitle;
-      let player_id = res.groups.player_id;
-      let reference_id = res.groups.service == 'tx' ? res.groups.reference_id : "ref:"+res.groups.reference_id;
-      fetch("https://players.brightcove.net/"+ player_id +"/"+ res.groups.player_key +"_default/index.min.js")
-      .then((resp) =>{ return resp.text();}).then(function(text){
-        let mres,policyKey;
-        if((mres = policyKeyPattern.exec(text)) == null){
-          policyKey = BCOV_POLICY[player_id]
-        }else{
-          policyKey = mres.groups.policyKey
-        }
-        console.log(player_id,policyKey)
-        fetch("https://edge.api.brightcove.com/playback/v1/accounts/" + player_id + "/videos/" + reference_id, {
-            headers: {
-              "X-Forwarded-For": "1.0.16.0",
-              "Accept": "application/json;pk=" + policyKey
-            }
-          }).then(response => response.json()).then(function(json){
-            let sources = json["sources"];
-            let src = sources.filter(function(i){ return i["ext_x_version"] == 3 && i["src"].startsWith("http://")} )[0]["src"]
-            document.write("streamlink "+src+" best --hls-segment-threads 10 -o "+title +"_"+ subtitle+ ".mp4" )
-
-          })
-        
-      })
-
+      parseTver(res);
     }
+  }else if(/fod\.fujitv\.co\.jp/.test(href)){
+
   }
 
 });

@@ -30824,24 +30824,24 @@ default = T
 					m = function(e, t) {
 						return e + t
 					},
-					h = function(e, t, n) {
-						var s = r(c, d(1), m(e, d(0))),
-							l = r(c, s, m(e, t)),
-							u = r(c, s, m(t, d(0))),
-							p = i.d(n),
-							h = o.d(p, l);
-						return a(f(u), h)
+					h = function(e, t, n) { //!4 !5  e kid t uid n second
+						var s = r(c, d(1), m(e, d(0))), // res1 = hmac256( rc4[data1] , kid+ rc4[data0])
+							l = r(c, s, m(e, t)), // res2 = hmac256( res1,  kid+uid)
+							u = r(c, s, m(t, d(0))), // res3 = hmac256(res1 , uid+ rc4[data0])
+							p = i.d(n),	// p = second -> bigint
+							h = o.d(p, l); // res4 = blowfish.decrypt( key=res2 ,value = p)
+						return a(f(u), h) //  aesecb.decrypt( key = res3, value = res4)
 					},
-					b = function(e, t, n) {
-						var s = r(c, d(3), m(d(2), e)),
-							l = r(c, s, m(t, e)),
-							u = r(c, s, m(d(2), t)),
-							p = i.d(n),
-							h = a(f(u), p);
-						return o.d(h, l)
+					b = function(e, t, n) { // last=4  e kid t uid n second
+						var s = r(c, d(3), m(d(2), e)), // res1 = hmac256( rc4[data3] , rc4[data2]+kid)
+							l = r(c, s, m(t, e)), //res2 = hmac256(res1, uid+kid)
+							u = r(c, s, m(d(2), t)), // res3 = hmac256(res1 , rc4[data2] +uid)
+							p = i.d(n), // p = second -> bigint
+							h = a(f(u), p); // res4 = aesecb.decrypt(key = res3 , value = p)
+						return o.d(h, l) // blowfish.decrypt(key = res2 ,value = res4)
 					},
-					y = function(e, t, n) {
-						var a = r(c, d(4), e + t),
+					y = function(e, t, n) {  // last=5 e kid t uid n second
+						var a = r(c, d(4), e + t), //d(4) rc[data4] a = hmac256(rc[data4], kid+uid)
 							l = r(c, a, t),
 							u = r(c, a, e);
 						l = s(p(5), f(l)), u = s(p(5), f(u));
