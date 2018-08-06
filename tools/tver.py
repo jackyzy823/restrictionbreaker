@@ -2,9 +2,6 @@ import requests
 import re
 import sqlite3
 
-from streamlink import Streamlink
-
-
 db  =sqlite3.connect("db_tver.db",check_same_thread  =False)
 cur = db.cursor()
 cur.execute(
@@ -62,7 +59,8 @@ def dbCommit(datatuple):
         cur.execute("insert into tver (`reference_id` , `service` , `player_id` , `name` , `title` , `subtitle` , `catchup_id` , `url` , `service_name` , `id` , `json` , `updated_at` , `done`) values (?,?,?,?,?,?,?,?,?,?,?,?,0);",
         datatuple);
     except sqlite3.IntegrityError:
-        print "duplicate: {0}: {1}".format(datatuple[1],datatuple[7])
+        pass
+        # print "duplicate: {0}: {1}".format(datatuple[1],datatuple[7])
     db.commit()
 
 
@@ -77,10 +75,10 @@ def parsePage(url):
     publisher_id = resdict['publisher_id']
     catchup_id = resdict['catchup_id']
     title = resdict["title"]
-    # title = title.strip('\xe3\x80\x80').strip()
+    title = title.decode("utf-8").strip(u'\u3000').strip().encode("utf-8")
 
     subtitle = resdict["subtitle"]
-    # subtitle = subtitle.strip('\xe3\x80\x80').strip()
+    subtitle = subtitle.decode("utf-8").strip(u'\u3000').strip().encode("utf-8")
     #.strip(u'\u3000').strip()
 
     if service == 'cx':
@@ -108,11 +106,19 @@ def parsePage(url):
 
 
         meta = re.findall(r'else\s*?{\s*?meta = \'(.*?)\';',resp.content,re.S)[0]
+        if len(meta) == 0:
+            meta = 'me113'
         m3u8 = re.findall(r'url: "(.*?)",',resp.content)[0].replace('" + meta + "',meta)
         if len(publisher_id)==4:
             publisher_id = re.findall("([^/]*?)"+meta,m3u8)[0]
         if len(subtitle) ==0:
-            subtitle = publisherid[-4:]
+            resp = requests.get("http://fod-sp.fujitv.co.jp/s/tver/redir.aspx?ser={0}".format(publisher_id))
+            if resp.url.find("error")!=-1:
+                #for those pasts -> 
+                subtitle = publisherid[-4:]
+            else:
+                subtitle = re.findall(r'''episode-title\">\s*?<h3>(.*?)</h3>''',resp.content)[0].replace('\xe3\x80\x90\xe7\x84\xa1\xe6\x96\x99\xe3\x81\xe3\x80\x91','').strip()
+
 
         return (reference_id,
                 service,
@@ -183,9 +189,11 @@ def findAll():
         urls = linkPattern.findall(page)
         links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
         for i in links:
-            dbCommit(parsePage(i))
-
-
+            try:
+                dbCommit(parsePage(i))
+            except Exception as e:
+                print str(e)
+                print i
 
 def updateJson():
     cur.execute("select rowid,url from tver where done = -2 ; ")
