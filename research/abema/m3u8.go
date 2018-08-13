@@ -45,7 +45,7 @@ import (
 */
 
 // for api v1/channels
-type ChannelJson struct {
+type channelJson struct {
 	Channels []struct {
 		Id       string
 		Name     string
@@ -53,6 +53,26 @@ type ChannelJson struct {
 			Hls  string
 			Dash string
 		}
+	}
+}
+
+type slotJson struct {
+	Slot struct {
+		Flags struct {
+			TimeshiftFree bool
+		}
+		Playback struct {
+			Hls string
+		}
+	}
+}
+
+type episodeJson struct {
+	Label struct {
+		Free bool
+	}
+	Playback struct {
+		Hls string
 	}
 }
 
@@ -240,7 +260,7 @@ func main() {
 	resp, _ = http.Get("https://api.abema.io/v1/channels")
 	body, _ = ioutil.ReadAll(resp.Body)
 	resp.Body.Close()
-	var channels ChannelJson
+	var channels channelJson
 	_ = json.Unmarshal(body, &channels)
 
 	// handlers
@@ -264,16 +284,23 @@ func main() {
 		}
 	})
 
-	change_relative_regxp := regexp.MustCompile(`https://linear-abematv\.akamaized\.net`)
+	// 0-> all 1-> program/channel/slot 2-> name  4->quality
+	channel_regexp := regexp.MustCompile(`/(channel|program|slot)/(?P<name>[^\/^\.]*)(/(?P<quality>\d+))?/playlist\.m3u8`)
+	change_license_regexp := regexp.MustCompile(`"(abematv-license)://(\w*)"`)
+	ts_regexp := regexp.MustCompile(`/(.*?)(/.*\.ts(\?.*)?)`)
+	change_relative_regxp := regexp.MustCompile(`https://(.*)-abematv\.akamaized\.net(.*)`) //include linear and vod
 	//ts_regexp := regexp.MustCompile(`/.*\.ts$`)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if *DETAILED_LOG {
-			applog.Println(r.URL.Path)
+			applog.Println("in /" , r.URL.Path)
 		}
-		if matched, _ := regexp.MatchString(`/.*\.ts$`, r.URL.Path); matched {
+		if matcheres := ts_regexp.FindStringSubmatch( r.URL.Path); matcheres != nil {
+			applog.Println("In ts handling")
+			d_type := matcheres[1]
+			url := matcheres[2]
 			w.Header().Set("Content-Type", "video/MP2T")
 			client := &http.Client{}
-			req, _ := http.NewRequest("GET", fmt.Sprintf("https://linear-abematv.akamaized.net%s", r.URL.Path), nil)
+			req, _ := http.NewRequest("GET", fmt.Sprintf("https://%s-abematv.akamaized.net%s",d_type,url), nil)
 			if *USING_JAPAN_IP {
 				req.Header.Add("X-Forwarded-For", JAPAN_IP)
 			}
@@ -282,16 +309,78 @@ func main() {
 			buf := make([]byte, *TS_SIZE)
 			io.CopyBuffer(w, resp.Body, buf)
 
+		} else if matchres := channel_regexp.FindStringSubmatch(r.URL.Path) ; matchres!=nil{
+			applog.Println("In m3u8 handling")
+			client := &http.Client{}
+			if matchres[4] == "" { 
+				name := matchres[2]
+				v_type := matchres[1]
+				if flagset["f"] { // set resolution implictly
+					http.Redirect(w, r, fmt.Sprintf("/%s/%s/%d/playlist.m3u8",v_type, name, *FORCE_RESOLUTION), http.StatusFound)
+					return
+				}
+				var req_str string
+				switch v_type {
+				case "program":
+					req_str = fmt.Sprintf("https://vod-abematv.akamaized.net/%s/%s/playlist.m3u8",v_type, name)
+				case "slot":
+					req_str = fmt.Sprintf("https://vod-abematv.akamaized.net/%s/%s/playlist.m3u8",v_type, name)
+				case "channel":
+					req_str = fmt.Sprintf("https://linear-abematv.akamaized.net/%s/%s/playlist.m3u8",v_type, name)
+	
+				}
+				applog.Println("Req str",req_str)
+				req, _ := http.NewRequest("GET", req_str, nil)
+				if *USING_JAPAN_IP {
+					req.Header.Add("X-Forwarded-For", JAPAN_IP)
+				}
+				w.Header().Set("Content-Type", "application/x-mpegURL")
+				resp, _ := client.Do(req)
+				defer resp.Body.Close()
+				io.Copy(w, resp.Body)
+				return
+				//no quality
+			} else {
+				applog.Println("having quality!!!")
+				name := matchres[2]
+				v_type := matchres[1]
+				quality := matchres[4]
+				var req_str string
+				switch v_type {
+				case "program":
+					req_str = fmt.Sprintf("https://vod-abematv.akamaized.net/%s/%s/%s/playlist.m3u8",v_type, name ,quality)
+				case "slot":
+					req_str = fmt.Sprintf("https://vod-abematv.akamaized.net/%s/%s/%s/playlist.m3u8",v_type, name, quality)
+				case "channel":
+					req_str = fmt.Sprintf("https://linear-abematv.akamaized.net/%s/%s/%s/playlist.m3u8",v_type, name, quality)
+	
+				}
+				req, _ := http.NewRequest("GET", req_str, nil)
+				if *USING_JAPAN_IP {
+					req.Header.Add("X-Forwarded-For", JAPAN_IP)
+				}
+				w.Header().Set("Content-Type", "application/x-mpegURL")
+				resp, _ := client.Do(req)
+				defer resp.Body.Close()
+				body, _ := ioutil.ReadAll(resp.Body)
+				body = change_license_regexp.ReplaceAll(body, []byte(`"/$1/$2"`))
+				if *PROXY_STREAM {
+					body = change_relative_regxp.ReplaceAll(body, []byte(`/$1$2`)) // /linear|vod(/tsurl)
+				}
+				w.Write(body)
+				//with quality
+			}
 		} else if r.URL.Path == "/" {
 			rand.Seed(time.Now().UnixNano())
 			pick := channels.Channels[rand.Intn(len(channels.Channels))]
 			if *DETAILED_LOG {
 				applog.Println("Random Channel:", pick.Id, pick.Name)
 			}
-			redirecturl := change_relative_regxp.ReplaceAllString(pick.Playback.Hls, ``)
+			redirecturl := change_relative_regxp.ReplaceAllString(pick.Playback.Hls, `$2`)
 			http.Redirect(w, r, redirecturl, http.StatusFound)
 			return
 		} else {
+			applog.Println("nothing matches")
 			return
 		}
 	})
@@ -308,50 +397,68 @@ func main() {
 		http.Redirect(w, r, fmt.Sprintf("/channel/%s/playlist.m3u8", matchres[1]), http.StatusFound)
 	})
 
-	channel_regexp := regexp.MustCompile(`/channel/(?P<name>[a-zA-Z0-9\-]*)(/(?P<quality>\d+))?/playlist\.m3u8`)
-	change_uri_regexp := regexp.MustCompile(`"(abematv-license)://(\w*)"`)
-	http.HandleFunc("/channel/", func(w http.ResponseWriter, r *http.Request) {
+	slot_regexp := regexp.MustCompile(`/channels/.+?/slots/(?P<slots>[^\?]+)`)
+	//slot
+	http.HandleFunc("/channels/", func(w http.ResponseWriter, r *http.Request) {
 		if *DETAILED_LOG {
 			applog.Println(r.URL.Path)
 		}
-		client := &http.Client{}
-
-		matchres := channel_regexp.FindStringSubmatch(r.URL.Path)
-		if matchres[3] == "" {
-			name := matchres[1]
-			if flagset["f"] { // set resolution implictly
-				http.Redirect(w, r, fmt.Sprintf("/channel/%s/%d/playlist.m3u8", name, *FORCE_RESOLUTION), http.StatusFound)
-				return
-			}
-			req, _ := http.NewRequest("GET", fmt.Sprintf("https://linear-abematv.akamaized.net/channel/%s/playlist.m3u8", name), nil)
-			if *USING_JAPAN_IP {
-				req.Header.Add("X-Forwarded-For", JAPAN_IP)
-			}
-			w.Header().Set("Content-Type", "application/x-mpegURL")
-			resp, _ := client.Do(req)
-			defer resp.Body.Close()
-			io.Copy(w, resp.Body)
+		matchres := slot_regexp.FindStringSubmatch(r.URL.Path)
+		if matchres == nil {
 			return
-			//no quality
-		} else {
-			name := matchres[1]
-			quality := matchres[3]
-			req, _ := http.NewRequest("GET", fmt.Sprintf("https://linear-abematv.akamaized.net/channel/%s/%s/playlist.m3u8", name, quality), nil)
-			if *USING_JAPAN_IP {
-				req.Header.Add("X-Forwarded-For", JAPAN_IP)
-			}
-			w.Header().Set("Content-Type", "application/x-mpegURL")
-			resp, _ := client.Do(req)
-			defer resp.Body.Close()
-			body, _ := ioutil.ReadAll(resp.Body)
-			body = change_uri_regexp.ReplaceAll(body, []byte(`"/$1/$2"`))
-			if *PROXY_STREAM {
-				body = change_relative_regxp.ReplaceAll(body, []byte(``))
-			}
-			w.Write(body)
-			//with quality
 		}
+		client := &http.Client{}
+		req, _ := http.NewRequest("GET", fmt.Sprintf("https://api.abema.io/v1/media/slots/%s", matchres[1]), nil)
+		req.Header.Add("Authorization", "Bearer "+usertoken)
+		resp, _ := client.Do(req)
+		defer resp.Body.Close()
+		if resp.StatusCode == http.StatusNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		body, _ := ioutil.ReadAll(resp.Body)
+		var slots slotJson
+		_ = json.Unmarshal(body, &slots)
+		if slots.Slot.Flags.TimeshiftFree == false {
+			w.WriteHeader(http.StatusPaymentRequired)
+			return
+		}
+		redirecturl := change_relative_regxp.ReplaceAllString(slots.Slot.Playback.Hls, `$2`)
+		http.Redirect(w, r, redirecturl, http.StatusFound) //like slot/%s/playlist.m3u8"
+
 	})
+	episode_regexp := regexp.MustCompile(`/video/episode/(?P<episode>[^\?]+)`)
+	http.HandleFunc("/video/episode/", func(w http.ResponseWriter, r *http.Request) {
+		if *DETAILED_LOG {
+			applog.Println(r.URL.Path)
+		}
+		matchres := episode_regexp.FindStringSubmatch(r.URL.Path)
+		if matchres == nil {
+			return
+		}
+		client := &http.Client{}
+		req, _ := http.NewRequest("GET", fmt.Sprintf("https://api.abema.io/v1/video/programs/%s", matchres[1]), nil)
+		req.Header.Add("Authorization", "Bearer "+usertoken)
+		resp, _ = client.Do(req)
+		defer resp.Body.Close()
+
+		if resp.StatusCode == http.StatusNotFound {
+			w.WriteHeader(http.StatusNotFound)
+			return
+		}
+		body, _ = ioutil.ReadAll(resp.Body)
+		var episode episodeJson
+		_ = json.Unmarshal(body, &episode)
+		if episode.Label.Free == false {
+			w.WriteHeader(http.StatusPaymentRequired)
+			return
+		}
+		redirecturl := change_relative_regxp.ReplaceAllString(episode.Playback.Hls, `$2`)
+		applog.Println("ep hls",episode.Playback.Hls)
+		http.Redirect(w, r, redirecturl, http.StatusFound) // like /program/%s/playlist.m3u8
+
+	})
+
 	applog.Println("Service started @", *LISTEN_SERVER, "!!!!!")
 	applog.Fatal(http.ListenAndServe(*LISTEN_SERVER, nil))
 	//fmt.Println(hex.EncodeToString(get_videokey_from_ticket("EYkgxWe4V3vNjoEGfvwA4Q",deviceid,usertoken)))
