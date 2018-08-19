@@ -41,6 +41,11 @@ token is userToken which is a JWT . decode the second part ->
 }
 ```
 
+2. User Login/Refresh?
+
+REQ GET https://api.abema.io/v1/users/<userid>
+HEADER: Authorization: Bearer userToken
+
 2.OneTimePassword (Transfer step 1)
 
 REQ: PUT https://api.abema.io/v1/users/<userid>/oneTimePassword
@@ -112,6 +117,10 @@ RESP
 
 abematv-license://<ticket>
 
+
+cid -> ticket -> realkey
+                     | <-decrypt with userinfo related to mediatoken
+ ->with mediatoken -> fakekey
 
 
 

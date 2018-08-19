@@ -1,0 +1,58 @@
+https://alphahinex.github.io/2015/12/31/how-to-encrypt-mp4-using-clearkey-and-play
+
+EME
+
+CDM
+
+DRM
+
+ISO ref IEC 23001-7-2011 or later
+http://www.doc88.com/p-8701582237067.html
+
+fullsample -> (in ngx_rtmp for audio)
+subsample  -> (in ngx_rtmp for video)
+
+Tools
+Bento4 -> mp4dash
+	https://qiita.com/khagi/items/bfe910e4b09110977049
+	https://radek350.wordpress.com/2017/10/29/dash-encrypting-and-playing-video-with-clearkey-videojs/
+Gpac -> mp4box
+
+Code:
+js:
+	shaka
+> https://github.com/google/shaka-player/issues/1444
+ usage and error
+ https://nightly-dot-shaka-player-demo.appspot.com/docs/api/shaka.util.Error.html
+
+why not work for clearkey license server
+ see https://stackoverflow.com/questions/43882946/setup-a-clearkey-server-for-shaka-player-didnt-work
+ and https://github.com/google/shaka-player/blob/master/docs/tutorials/drm-config.md#choosing-a-key-system
+ and https://github.com/google/shaka-player/commit/95a55c7240938e20b03d0adf8f515955db46f57b
+
+https://github.com/google/shaka-packager/issues/424
+https://github.com/google/shaka-packager/issues/306
+
+
+shaka-packager (only encrypt?) --enable_raw_key_decryption
+https://github.com/google/shaka-packager/blob/master/packager/media/crypto/encryption_handler.cc
+doc:
+https://google.github.io/shaka-packager/html/documentation.html#encryption-decryption-options
+
+usage:
+packager-linux in=test.mp4,stream=video,output=dec.mp4 --enable_raw_key_decryption --keys label=VIDEO:key_id=c30e0b1f266a420c892ef18188c25db1:key=bff1cb66580c477bba992a6c4a291ffa
+
+
+browser implement
+
+https://chromium.googlesource.com/chromium/src/media/+/master/cdm/cenc_decryptor.cc
+https://chromium.googlesource.com/chromium/src/media/+/master/cdm/aes_decryptor.cc
+> https://groups.google.com/a/chromium.org/forum/#!topic/chromium-dev/exotX6Nf_z0
+
+https://github.com/cpearce/gmp-clearkey
+
+nginx_rtmp -> dash enhance version
+https://github.com/ut0mt8/nginx-rtmp-module  see dash folder
+
+
+android drm Clearkeyplugin ??

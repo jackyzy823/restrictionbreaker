@@ -21,6 +21,9 @@ deviceId
 "401551ae-086f-45e6-96b3-dfcc176982c7"
 
 '''
+
+# dependencies : time hmac hashlib base64.urlsafe_b64encode 
+
 # Note: base64 difference
 #   NO_PADDING -> remove =
 #   URLSAFE -> + and / ->
@@ -59,6 +62,7 @@ def generateApplicationKeySecret(deviceId):
 
     return urlsafe_b64encode(tmp).rstrip("=")
 
+#dependencied: struct
 def to_bigint_array(key):
     res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
     if res > 2*128:
@@ -78,13 +82,13 @@ def to_bigint128_array(key):
 RC4DATA = [[200, 196, 157, 49, 219, 232, 69, 76, 83, 241, 90, 229, 150, 242, 92, 15, 84, 148, 229, 112, 54, 1, 119, 2, 169, 57, 211, 105, 136, 202, 103, 168], [234, 169, 154, 104, 251, 227, 123, 14, 69, 153, 122, 248, 216, 214, 90, 81, 11, 135, 195, 113, 29, 23, 116, 2, 161, 38, 253, 115, 142, 200, 42, 189], [200, 165, 201, 110, 242, 224, 40, 65, 59, 242, 81, 195, 162, 188, 101, 3, 79, 254, 234, 10, 16, 95, 72, 35, 164, 67, 164, 71, 240, 227, 121, 199], [245, 130, 172, 48, 216, 131, 115, 127, 66, 236, 28, 185, 136, 252, 90, 79, 119, 243, 179, 12, 72, 39, 98, 61, 137, 71, 249, 115, 214, 177, 21, 172], [89, 223, 151, 248, 170, 122, 131, 80, 144, 118, 56, 163, 241, 252, 134, 140, 142, 29, 185, 213, 230, 84, 127, 54, 179, 36, 10, 155, 207, 175, 138, 50], [14, 100, 3, 93, 159, 22, 163, 57, 95, 210, 206, 203, 142, 255, 17, 137, 104]]
 RC4KEY = [44, 128, 188, 10, 35, 20]
 
-def getMpdKey(mpd,userid,usertoken):
-    mpdxml = requests.get(mpd,headers={"X-Forwarded-For":"1.0.16.0"}).content #thi api has no referer with media token 
-    # kid is referer to the program displaying
-    kidraw = re.findall(r'''cenc:default_KID=\"(.+?)\"''',mpdxml)[0]
+#dependencies: requests re base64.urlsafe_b64encode base64.urlsafe_b64decode uuid Crypto.Cipher.ARC4 Crypto.Cipher.AES Crypto.Cipher.Blowfish
+
+def getMpdKey(kidraw,userid,usertoken):
     # from string uuid -> byte uuid -> b64_url_nopadding uuid
     kid =urlsafe_b64encode(uuid.UUID(kidraw).bytes).rstrip('=')
-    print "Kid:",kid
+    # print "Kid:",kid
+    print "kid",uuid.UUID(kidraw).bytes.encode('hex')
 
     #TODO appversion from app.js
     # appversion <--relate-> RC4KEY DATAS
@@ -133,8 +137,11 @@ def getMpdKey(mpd,userid,usertoken):
         final = aes.decrypt(first_bytes)
         padding = ord(final[-1])
         final = final[:-1*padding]
-        return final
-        #urlsafe_b64decode(final_utf8+"==") #EME use base64(key)
+        # return final
+
+        print "key:",urlsafe_b64decode(final+"==").encode('hex') #EME use base64(key)
+        print '"{0}":"{1}"'.format(uuid.UUID(kidraw).bytes.encode('hex'),urlsafe_b64decode(final+"==").encode('hex') )
+
     elif second_lastchar == '4':
         raise NotImplementedError
     else:
@@ -246,37 +253,44 @@ def getM3u8Key(link,deviceid,userid,usertoken):
     # return getM3u8_pc(ticket,userid,usertoken)
 
 
-def processUrl(link):
+def generateUserInfo():
     deviceId = str(uuid.uuid4())
     res = requests.post("https://api.abema.io/v1/users",json={"deviceId":deviceId,"applicationKeySecret":generateApplicationKeySecret(deviceId)})
     usertoken = res.json()['token'] #for media bearer 
     # print usertoken
     userid = res.json()['profile']["userId"]
+    return (userid,deviceid,usertoken)
+    
+def processUrl(link):
+    (userid,deviceid,usertoken) = generateUserInfo()
     if link.endswith(".mpd"):
-        getMpdKey(link,userid,usertoken) # usertoken contains userid
+        mpdxml = requests.get(link,headers={"X-Forwarded-For":"1.0.16.0"}).content #thi api has no referer with media token 
+        # kid is referer to the program displaying
+        kidraw = re.findall(r'''cenc:default_KID=\"(.+?)\"''',mpdxml)[0] # kidraw in format xxxx-xxxx-xxxx-xxx like uuid
+        getMpdKey(kidraw,userid,usertoken) # usertoken contains userid
     elif link.endswith(".m3u8"):
         getM3u8Key(link,deviceId,userid,usertoken)
 
-# processUrl("https://linear-abematv.akamaized.net/channel/special-plus-2/manifest.mpd")
+processUrl("https://linear-abematv.akamaized.net/channel/abema-special/manifest.mpd")
 # processUrl("https://linear-abematv.akamaized.net/channel/abema-news/1080/playlist.m3u8")
 
 
-for channel in requests.get("https://api.abema.io/v1/channels").json()["channels"]:
-    m3u8link = channel["playback"]["hls"].replace("playlist.m3u8",'1080/playlist.m3u8')
-    print channel["id"],":",
-    processUrl(m3u8link)
-        # m3u8 = requests.get(m3u8link,headers={"X-Forwarded-For":"1.0.16.0"}).content
-        # res = re.findall(r"abematv-license://(.*)\"",m3u8)
-        # if  len(res) != 0:
-        #     ticket = res[0]
-        #     vkey = getVideoKeyFromTicket(ticket)
-        #     print channel["id"].ljust(20,"."),":",ticket,vkey.encode('hex')
-        #     # print channel["id"].ljust(20,"."),": No key"
-        #     break
-        # print channel["id"].ljust(20,"."),": No key"
-    print 
-    if channel["playback"].get("dash",False):
-        processUrl(channel["playback"]["dash"])
+# for channel in requests.get("https://api.abema.io/v1/channels").json()["channels"]:
+#     m3u8link = channel["playback"]["hls"].replace("playlist.m3u8",'1080/playlist.m3u8')
+#     print channel["id"],":",
+#     processUrl(m3u8link)
+#         # m3u8 = requests.get(m3u8link,headers={"X-Forwarded-For":"1.0.16.0"}).content
+#         # res = re.findall(r"abematv-license://(.*)\"",m3u8)
+#         # if  len(res) != 0:
+#         #     ticket = res[0]
+#         #     vkey = getVideoKeyFromTicket(ticket)
+#         #     print channel["id"].ljust(20,"."),":",ticket,vkey.encode('hex')
+#         #     # print channel["id"].ljust(20,"."),": No key"
+#         #     break
+#         # print channel["id"].ljust(20,"."),": No key"
+#     print 
+#     if channel["playback"].get("dash",False):
+#         processUrl(channel["playback"]["dash"])
 '''
 refernece java base64 from  https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/util/Base64.java
 import java.io.UnsupportedEncodingException;
