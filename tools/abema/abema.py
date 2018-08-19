@@ -1,3 +1,4 @@
+import base64
 import hashlib
 import hmac
 import json
@@ -6,9 +7,7 @@ import struct
 import time
 import uuid
 
-from base64 import urlsafe_b64encode,urlsafe_b64decode
 import requests
-
 from Crypto.Cipher import ARC4 ,Blowfish ,AES
 
 '''
@@ -21,6 +20,32 @@ deviceId
 "401551ae-086f-45e6-96b3-dfcc176982c7"
 
 '''
+
+def _urlsafe_b64decode(_str):
+    return base64.urlsafe_b64decode(_str + (4 - len(_str) % 4) * '=')
+   
+def _urlsafe_b64encode(_str):
+    return base64.urlsafe_b64encode(_str).replace('=','')
+
+
+
+#dependencied: struct
+def _to_bigint_array(key):
+    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
+    if res > 2*128:
+        return struct.pack('>QQQQ',res >> 192, (res>>128 ) & 0xffffffffffffffff ,(res>>64)& 0xffffffffffffffff ,res & 0xffffffffffffffff )
+    else:
+        return struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
+
+def _to_bigint256_array(key):
+    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
+    return struct.pack('>QQQQ',res >> 192, (res>>128 ) & 0xffffffffffffffff ,(res>>64)& 0xffffffffffffffff ,res & 0xffffffffffffffff )
+
+def _to_bigint128_array(key):
+    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
+    return struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
+
+
 
 # dependencies : time hmac hashlib base64.urlsafe_b64encode 
 
@@ -44,7 +69,7 @@ def generateApplicationKeySecret(deviceId):
         tmp = h.digest()
     # step 2
     h = hmac.new(secretkey,digestmod=hashlib.sha256)
-    h.update(urlsafe_b64encode(tmp).rstrip("=")+deviceId)
+    h.update(_urlsafe_b64encode(tmp)+deviceId)
     tmp = h.digest()
     for i in range(time_struct.tm_mday % 5):
         h = hmac.new(secretkey,digestmod=hashlib.sha256)
@@ -52,7 +77,7 @@ def generateApplicationKeySecret(deviceId):
         tmp = h.digest()
     #step 3
     h = hmac.new(secretkey,digestmod=hashlib.sha256)
-    h.update(urlsafe_b64encode(tmp).rstrip("=")+  str(ts_1hour)) # no .0 
+    h.update(_urlsafe_b64encode(tmp)+  str(ts_1hour)) # no .0 
     tmp = h.digest()
 
     for i in range(time_struct.tm_hour  % 5): # should be utc hour!!!
@@ -60,33 +85,23 @@ def generateApplicationKeySecret(deviceId):
         h.update(tmp)
         tmp = h.digest()
 
-    return urlsafe_b64encode(tmp).rstrip("=")
+    return _urlsafe_b64encode(tmp)
 
-#dependencied: struct
-def to_bigint_array(key):
-    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
-    if res > 2*128:
-        return struct.pack('>QQQQ',res >> 192, (res>>128 ) & 0xffffffffffffffff ,(res>>64)& 0xffffffffffffffff ,res & 0xffffffffffffffff )
-    else:
-        return struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
 
-def to_bigint256_array(key):
-    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
-    return struct.pack('>QQQQ',res >> 192, (res>>128 ) & 0xffffffffffffffff ,(res>>64)& 0xffffffffffffffff ,res & 0xffffffffffffffff )
-
-def to_bigint128_array(key):
-    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
-    return struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
 
 #for pc javascript (mpd && m3u8)
-RC4DATA = [[200, 196, 157, 49, 219, 232, 69, 76, 83, 241, 90, 229, 150, 242, 92, 15, 84, 148, 229, 112, 54, 1, 119, 2, 169, 57, 211, 105, 136, 202, 103, 168], [234, 169, 154, 104, 251, 227, 123, 14, 69, 153, 122, 248, 216, 214, 90, 81, 11, 135, 195, 113, 29, 23, 116, 2, 161, 38, 253, 115, 142, 200, 42, 189], [200, 165, 201, 110, 242, 224, 40, 65, 59, 242, 81, 195, 162, 188, 101, 3, 79, 254, 234, 10, 16, 95, 72, 35, 164, 67, 164, 71, 240, 227, 121, 199], [245, 130, 172, 48, 216, 131, 115, 127, 66, 236, 28, 185, 136, 252, 90, 79, 119, 243, 179, 12, 72, 39, 98, 61, 137, 71, 249, 115, 214, 177, 21, 172], [89, 223, 151, 248, 170, 122, 131, 80, 144, 118, 56, 163, 241, 252, 134, 140, 142, 29, 185, 213, 230, 84, 127, 54, 179, 36, 10, 155, 207, 175, 138, 50], [14, 100, 3, 93, 159, 22, 163, 57, 95, 210, 206, 203, 142, 255, 17, 137, 104]]
-RC4KEY = [44, 128, 188, 10, 35, 20]
+# RC4DATA = [[200, 196, 157, 49, 219, 232, 69, 76, 83, 241, 90, 229, 150, 242, 92, 15, 84, 148, 229, 112, 54, 1, 119, 2, 169, 57, 211, 105, 136, 202, 103, 168], [234, 169, 154, 104, 251, 227, 123, 14, 69, 153, 122, 248, 216, 214, 90, 81, 11, 135, 195, 113, 29, 23, 116, 2, 161, 38, 253, 115, 142, 200, 42, 189], [200, 165, 201, 110, 242, 224, 40, 65, 59, 242, 81, 195, 162, 188, 101, 3, 79, 254, 234, 10, 16, 95, 72, 35, 164, 67, 164, 71, 240, 227, 121, 199], [245, 130, 172, 48, 216, 131, 115, 127, 66, 236, 28, 185, 136, 252, 90, 79, 119, 243, 179, 12, 72, 39, 98, 61, 137, 71, 249, 115, 214, 177, 21, 172], [89, 223, 151, 248, 170, 122, 131, 80, 144, 118, 56, 163, 241, 252, 134, 140, 142, 29, 185, 213, 230, 84, 127, 54, 179, 36, 10, 155, 207, 175, 138, 50], [14, 100, 3, 93, 159, 22, 163, 57, 95, 210, 206, 203, 142, 255, 17, 137, 104]]
+# RC4KEY = [44, 128, 188, 10, 35, 20]
 
 #dependencies: requests re base64.urlsafe_b64encode base64.urlsafe_b64decode uuid Crypto.Cipher.ARC4 Crypto.Cipher.AES Crypto.Cipher.Blowfish
-
+# kidraw uuid-format string 
+# userid string
+# usertoken string
 def getMpdKey(kidraw,userid,usertoken):
+    RC4DATA = [[200, 196, 157, 49, 219, 232, 69, 76, 83, 241, 90, 229, 150, 242, 92, 15, 84, 148, 229, 112, 54, 1, 119, 2, 169, 57, 211, 105, 136, 202, 103, 168], [234, 169, 154, 104, 251, 227, 123, 14, 69, 153, 122, 248, 216, 214, 90, 81, 11, 135, 195, 113, 29, 23, 116, 2, 161, 38, 253, 115, 142, 200, 42, 189], [200, 165, 201, 110, 242, 224, 40, 65, 59, 242, 81, 195, 162, 188, 101, 3, 79, 254, 234, 10, 16, 95, 72, 35, 164, 67, 164, 71, 240, 227, 121, 199], [245, 130, 172, 48, 216, 131, 115, 127, 66, 236, 28, 185, 136, 252, 90, 79, 119, 243, 179, 12, 72, 39, 98, 61, 137, 71, 249, 115, 214, 177, 21, 172], [89, 223, 151, 248, 170, 122, 131, 80, 144, 118, 56, 163, 241, 252, 134, 140, 142, 29, 185, 213, 230, 84, 127, 54, 179, 36, 10, 155, 207, 175, 138, 50], [14, 100, 3, 93, 159, 22, 163, 57, 95, 210, 206, 203, 142, 255, 17, 137, 104]]
+    RC4KEY = [44, 128, 188, 10, 35, 20]
     # from string uuid -> byte uuid -> b64_url_nopadding uuid
-    kid =urlsafe_b64encode(uuid.UUID(kidraw).bytes).rstrip('=')
+    kid =base64.urlsafe_b64encode(uuid.UUID(kidraw).bytes).rstrip('=')
     # print "Kid:",kid
     print "kid",uuid.UUID(kidraw).bytes.encode('hex')
 
@@ -104,7 +119,7 @@ def getMpdKey(kidraw,userid,usertoken):
     k = res.json()['keys'][0]['k']
 
     (first,second,third) = k.split('.')
-    first_bytes = to_bigint256_array(first)
+    first_bytes = _to_bigint256_array(first)
     second_lastchar = second[-1] #  == "5" or "4" or others
     if second_lastchar == '5':
         second_rest = second[:-1]
@@ -121,7 +136,7 @@ def getMpdKey(kidraw,userid,usertoken):
         res5 = ARC4.new(KEY2).encrypt(res3) #b
 
 
-        second_rest_bytes = to_bigint128_array(second_rest)
+        second_rest_bytes = _to_bigint128_array(second_rest)
         # print map(ord,second_rest_bytes)
 
         res6 = ARC4.new(res5).encrypt(second_rest_bytes)
@@ -139,8 +154,8 @@ def getMpdKey(kidraw,userid,usertoken):
         final = final[:-1*padding]
         # return final
 
-        print "key:",urlsafe_b64decode(final+"==").encode('hex') #EME use base64(key)
-        print '"{0}":"{1}"'.format(uuid.UUID(kidraw).bytes.encode('hex'),urlsafe_b64decode(final+"==").encode('hex') )
+        print "key:",_urlsafe_b64decode(final).encode('hex') #EME use base64(key)
+        print '"{0}":"{1}"'.format(uuid.UUID(kidraw).bytes.encode('hex'),_urlsafe_b64decode(final).encode('hex') )
 
     elif second_lastchar == '4':
         raise NotImplementedError
@@ -148,6 +163,9 @@ def getMpdKey(kidraw,userid,usertoken):
         raise NotImplementedError
 
 def getM3u8_pc(ticket,userid,usertoken):
+    RC4DATA = [[200, 196, 157, 49, 219, 232, 69, 76, 83, 241, 90, 229, 150, 242, 92, 15, 84, 148, 229, 112, 54, 1, 119, 2, 169, 57, 211, 105, 136, 202, 103, 168], [234, 169, 154, 104, 251, 227, 123, 14, 69, 153, 122, 248, 216, 214, 90, 81, 11, 135, 195, 113, 29, 23, 116, 2, 161, 38, 253, 115, 142, 200, 42, 189], [200, 165, 201, 110, 242, 224, 40, 65, 59, 242, 81, 195, 162, 188, 101, 3, 79, 254, 234, 10, 16, 95, 72, 35, 164, 67, 164, 71, 240, 227, 121, 199], [245, 130, 172, 48, 216, 131, 115, 127, 66, 236, 28, 185, 136, 252, 90, 79, 119, 243, 179, 12, 72, 39, 98, 61, 137, 71, 249, 115, 214, 177, 21, 172], [89, 223, 151, 248, 170, 122, 131, 80, 144, 118, 56, 163, 241, 252, 134, 140, 142, 29, 185, 213, 230, 84, 127, 54, 179, 36, 10, 155, 207, 175, 138, 50], [14, 100, 3, 93, 159, 22, 163, 57, 95, 210, 206, 203, 142, 255, 17, 137, 104]]
+    RC4KEY = [44, 128, 188, 10, 35, 20]
+
     #TODO appversion from app.js
     # appversion <--relate-> RC4KEY DATAS
 
@@ -188,7 +206,7 @@ def getM3u8_pc(ticket,userid,usertoken):
         res4 = ARC4.new(KEY2).encrypt(res2)
         res5 = ARC4.new(KEY2).encrypt(res3)
 
-        key_res_bytes = to_bigint128_array(key_res)
+        key_res_bytes = _to_bigint128_array(key_res)
         res6 = ARC4.new(res5).encrypt(key_res_bytes)
         res7 = Blowfish.new(res4,Blowfish.MODE_ECB).decrypt(res6)
         return res7
@@ -220,10 +238,8 @@ def getM3u8Key_android(ticket,deviceId,usertoken):
     key = res.json()['k']
     print cid,
     # print key
+    encdata = _to_bigint128_array(key)
 
-    res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
-    import struct
-    encdata = struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
     # print encdata.encode('hex')
     # from RC4 dec(IV:DB98A8E7CECA3424D975280F90BD03EE data:D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB)
     # Crypto.Cipher.ARC4.new('DB98A8E7CECA3424D975280F90BD03EE'.decode('hex')).decrypt('D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB'.decode('hex')).encode('hex')
@@ -246,16 +262,17 @@ def getM3u8Key(link,deviceid,userid,usertoken):
         return ''
     ticket = res[0]
 
-    # key1 = getM3u8Key_android(ticket,deviceid,usertoken).encode('hex')
+    key1 = getM3u8Key_android(ticket,deviceid,usertoken).encode('hex')
     key2 =  getM3u8_pc(ticket,userid,usertoken).encode('hex')
-    # assert(key1==key2)
+    assert(key1==key2)
+    print key2
     return key2
     # return getM3u8_pc(ticket,userid,usertoken)
 
 
 def generateUserInfo():
-    deviceId = str(uuid.uuid4())
-    res = requests.post("https://api.abema.io/v1/users",json={"deviceId":deviceId,"applicationKeySecret":generateApplicationKeySecret(deviceId)})
+    deviceid = str(uuid.uuid4())
+    res = requests.post("https://api.abema.io/v1/users",json={"deviceId":deviceid,"applicationKeySecret":generateApplicationKeySecret(deviceid)})
     usertoken = res.json()['token'] #for media bearer 
     # print usertoken
     userid = res.json()['profile']["userId"]
@@ -269,10 +286,11 @@ def processUrl(link):
         kidraw = re.findall(r'''cenc:default_KID=\"(.+?)\"''',mpdxml)[0] # kidraw in format xxxx-xxxx-xxxx-xxx like uuid
         getMpdKey(kidraw,userid,usertoken) # usertoken contains userid
     elif link.endswith(".m3u8"):
-        getM3u8Key(link,deviceId,userid,usertoken)
+        getM3u8Key(link,deviceid,userid,usertoken)
+
 
 processUrl("https://linear-abematv.akamaized.net/channel/abema-special/manifest.mpd")
-# processUrl("https://linear-abematv.akamaized.net/channel/abema-news/1080/playlist.m3u8")
+processUrl("https://linear-abematv.akamaized.net/channel/abema-news/1080/playlist.m3u8")
 
 
 # for channel in requests.get("https://api.abema.io/v1/channels").json()["channels"]:
