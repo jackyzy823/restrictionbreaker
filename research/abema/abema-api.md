@@ -1,4 +1,4 @@
-1.User Generate
+1. User Generate
 
 REQ: POST https://api.abema.io/v1/users
 
@@ -46,7 +46,7 @@ token is userToken which is a JWT . decode the second part ->
 REQ GET https://api.abema.io/v1/users/<userid>
 HEADER: Authorization: Bearer userToken
 
-2.OneTimePassword (Transfer step 1)
+3. OneTimePassword (Transfer step 1)
 
 REQ: PUT https://api.abema.io/v1/users/<userid>/oneTimePassword
 
@@ -57,7 +57,7 @@ DATA
 {"password":""}
 ```
 
-3.OneTimePassword Auth (Transfer step 2 , in tmpdeviceId,tmpuserToken and tmpuserId)
+4. OneTimePassword Auth (Transfer step 2 , in tmpdeviceId,tmpuserToken and tmpuserId)
 
 REQ POST https://api.abema.io/v1/auth/oneTimePassword
 
@@ -75,13 +75,13 @@ RESP
 so tmpuserId ,tmpuserToken is dropped,but  tmpdeviceId remians.
 decode the newuserToken second part  -> deviceId is tmpdeviceId
 
-so we can  know that a userId can link to multi deviceId ,and userToke is related to userId AND deviceId
+so we can  know that a userId can link to multi deviceId ,and userToken is related to userId AND deviceId
 
-4.MediaToken
+5. MediaToken
 
 PC version:
 
-REQ GET https://api.abema.io/v1/media/token
+REQ `GET https://api.abema.io/v1/media/token`
 
 PARAMS osName pc osVersion 1.0.0 osLang ja_JP osTimezone Asia/Tokyo appVersion v6.0.2 (from app.js)
 
@@ -104,10 +104,10 @@ RESP
 ```json
 {"token": "mediatoken"}
 ```
-
+NOTE: there's no different  between 2 version except different params
 NOTE: generate mediatoken for user
 
-5.M3U8 license (aka: ticket)
+6. M3U8 license (aka: ticket)
 
 Note: ticket is related to video/channel ,has no relationship with user'id,device,token
 
@@ -117,15 +117,122 @@ RESP
 
 abematv-license://<ticket>
 
-
-cid -> ticket -> realkey
-                     | <-decrypt with userinfo related to mediatoken
- ->with mediatoken -> fakekey
-
-
-
-
+```
+cid <-> ticket <-> realkey
+  |                     ^ 
+  V                     | <-decrypt with userinfo related to mediatoken
+enc with mediatoken -> fakekey
+```
 
 
 
+7. License to key (PC) 
+REQ `POST https://license.abema.io/abematv-hls?t=<mediatoken>`
 
+DATA
+```json
+{   "kv":"wd", //means desktop also from xhrp.js
+    "kg":"<generation number from xhrp.js>",
+    "lt":"<ticket>"
+}
+```
+
+RESP
+```json
+{
+    "cid":"<content id can used in slots>",
+    "k" :"<fakekey >" //need decrypt with userid and cid,select algothrim via last char 
+}
+```
+
+8. License to key (Android) 
+REQ `POST https://license.abema.io/abematv-hls?t=<mediatoken>`
+
+DATA
+```json
+{   "kv":"a", //means android from apk
+    "lt":"<ticket>"
+}
+```
+
+RESP
+```json
+{
+    "cid":"<content id can used in slots>",
+    "k" :"<fakekey>" //need decrypt algorithm with deviceid and cid  ,which differs from pc version
+}
+```
+
+9. DASH 
+REQ
+
+RESP
+ContentProtection default_KID
+
+10. DASH LICENSE
+REQ `POST https://license.abema.io/abematv?t=<mediatoken>`
+
+DATA
+```json
+{   "kids":["<kid>"], // kid = base64.urlsafe_b64encode(uuid.UUID(kidraw).bytes).rstrip('=')
+    "type":"temporary"}
+```
+
+RESP
+```json
+{
+    "keys":[
+        {   "kid":"<kid>",
+            "k":"fakekey" //  //need decrypt algorithm with userid select algothrim via last char  ,which differs with m3u8's algo.
+        }
+    ]
+}
+```
+
+11. VIDEO GENRES
+REQ `GET https://api.abema.io/v1/video/genres`
+
+RESP
+```json
+{
+    "genres":[
+        {
+            "id":"",
+            "name":"",
+            "subGenres":[]
+        }
+    ]
+}
+```
+11. VIDEO 
+REQ `GET https://api.abema.io/v1/video/featureGenres/<genre>/cards?limit=<20 for default>&next=<if more than limition next request with previous response's next>&onlyFree=true`
+
+
+somefree: label{someFree: true}
+free: label{free: true}
+nonfree: label{}
+
+
+next 
+
+{
+    cards:
+    [
+     {
+        "title":"",
+        "caption":"",
+        "seriesId":"",
+        "programProvidedInfo":{} //always {}???
+        "label":{}
+     }
+    ]
+}
+
+12. 
+REQ `GET https://api.abema.io/v1/video/series/<seriesId>`
+
+
+    version 
+
+13
+REQ `GET https://api.abema.io/v1/video/series/<seriesId>/programs?limit=20&offset=0&order=seq&seasonId=<seriesid_season>&seriesVersion=<version in 12>`

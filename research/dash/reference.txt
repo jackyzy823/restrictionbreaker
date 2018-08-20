@@ -57,3 +57,27 @@ https://github.com/ut0mt8/nginx-rtmp-module  see dash folder
 
 
 android drm Clearkeyplugin ??
+
+
+
+How to get all m4s s?
+
+1.segmenttemplate & segmenttimeline
+
+
+https://blogs.msdn.microsoft.com/azchina/2014/12/04/azure-dash/
+
+use InbandEventStream to force update mpd?
+or mpd -> minimumUpdatePeriod? and publishTime
+
+
+https://dashif.org/w/2015/04/DASH-IF-IOP-v3.0.pdf
+
+shaka timeline
+https://github.com/google/shaka-player/blob/fed7166a4156033918b0d3434b1329146f7a1668/lib/media/streaming_engine.js
+
+TODO
+1. get all m4s and decrypt (understand timeline)
+
+2. change manifest -> drop contentprotection and decrpyt m4s via proxy (parse mp4 and decrypt)
+

@@ -1,6 +1,6 @@
 1. use akami cdn ,bypass by X-forwarded-for
-2. live ,no past video
-
+2. live 
+3. episode and channel slot ( can get slot from cid)
 
     '''https://abematv.akamaized.net/region --> 403 xml Access Denied'''
     '''https://api.abema.io/v1/ip/check  --> 403 {}'''  200 also {}  so redirecturl may not work for 307
@@ -310,7 +310,7 @@ default kid b0e011c8-4256-4d39-a37e-bcc4ce2fbeee  -> to bytes \xb0\xe0 ...-> url
 {"keys":[{"kty":"oct","k":"CCtMHW1YWMjaXYMA8wErppGUqNsycPKmwhKohRtQSMs1.BgYPyd5vjjVJvw2Q5uPaif5.89101c22598d9e566c800ced10d90166","kid":"sOARyEJWTTmjfrzEzi--7g"}],"type":"temporary"}
 
 
-in js
+in js for mpd
  licenseResponseProcessor: I()(b.a)  -> function(n){ var r = l[w][f][u](null, new l[O](n))....}
 
 // n array buffer (for json response)
@@ -465,3 +465,98 @@ ffmpeg/libavformat/hls.c  -> open_url()
 
 
 https://abema.tv/ddd77f68cb459087c695.app.js traceversion: update 7/20
+
+
+Sample code: generateAppkeysecret /* compiled from: Secret */
+
+'''
+refernece java base64 from  https://android.googlesource.com/platform/frameworks/base/+/master/core/java/android/util/Base64.java
+import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
+import java.security.Key;
+import java.security.NoSuchAlgorithmException;
+import javax.crypto.Mac;
+import javax.crypto.spec.SecretKeySpec;
+
+//java 8
+import java.time.LocalDateTime;
+import java.time.ZoneOffset; 
+import java.time.temporal.ChronoUnit; 
+
+import javax.xml.bind.DatatypeConverter;
+
+
+public class Test {
+    public static String a(String str, LocalDateTime fVar) {
+        Throwable e;
+        int i = 0;
+        LocalDateTime cQ = fVar.plusHours(1); //+1hour
+        try {
+            Key secretKeySpec = new SecretKeySpec("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe".getBytes("utf-8"), "HmacSHA256");
+            Mac instance = Mac.getInstance("HmacSHA256");
+            instance.init(secretKeySpec);
+            try {
+                int i2;
+                instance.update("v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe".getBytes("utf-8"));
+                byte[] doFinal = instance.doFinal();
+                System.out.printf("Step1:%s\n",DatatypeConverter.printHexBinary(doFinal));
+                for (i2 = 0; i2 < cQ.getMonthValue(); i2++) {
+                    doFinal = instance.doFinal(doFinal);
+                    System.out.printf("Dofinal:%s\n",DatatypeConverter.printHexBinary(doFinal));
+                }
+                System.out.printf("month:%d\n",cQ.getMonthValue());
+                try {
+                    System.out.printf("Step1:%s\n",DatatypeConverter.printHexBinary(doFinal));
+                    byte[] bytes = (Base64.encodeToString(doFinal, 11) + str).getBytes("utf-8");
+                    instance.reset();
+                    instance.update(bytes);
+                    doFinal = instance.doFinal();
+                    for (i2 = 0; i2 < cQ.getDayOfMonth() % 5; i2++) {
+                        doFinal = instance.doFinal(doFinal);
+                    }
+                    try {
+                        bytes = (Base64.encodeToString(doFinal, 11) + cQ.toEpochSecond(ZoneOffset.UTC)).getBytes("utf-8");
+                        instance.reset();
+                        instance.update(bytes);
+                        bytes = instance.doFinal();
+                        while (i < cQ.getHour() % 5) {
+                            bytes = instance.doFinal(bytes);
+                            i++;
+                        }
+                        return Base64.encodeToString(bytes, 11);
+                    } catch (Throwable e2) {
+                        System.out.println("error");
+                            return null;
+                    }
+                } catch (Throwable e22) {
+                                            System.out.println("error");
+
+                        return null;
+                }
+            } catch (Throwable e222) {
+                        System.out.println("error");
+
+                    return null;
+            }
+        } catch (UnsupportedEncodingException e3) {
+                        System.out.println("error");
+
+                return null;
+        } catch (InvalidKeyException e4) {
+                        System.out.println("error");
+
+                return null;
+        } catch (NoSuchAlgorithmException e5) {
+                        System.out.println("error");
+
+                return null;
+        }
+    }
+
+    public static void main(String[] args) {
+        LocalDateTime dt = LocalDateTime.of(2018, 7, 16, 8, 00); 
+        System.out.println(a("uuid",dt));
+    }
+}
+
+'''
