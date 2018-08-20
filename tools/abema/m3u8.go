@@ -256,6 +256,7 @@ func main() {
 	var t map[string]string
 	_ = json.Unmarshal(body, &t)
 	var usertoken = t["token"]
+	applog.Println("User Token:",usertoken)
 	//
 	resp, _ = http.Get("https://api.abema.io/v1/channels")
 	body, _ = ioutil.ReadAll(resp.Body)
@@ -292,10 +293,9 @@ func main() {
 	//ts_regexp := regexp.MustCompile(`/.*\.ts$`)
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		if *DETAILED_LOG {
-			applog.Println("in /" , r.URL.Path)
+			applog.Println(r.URL.Path)
 		}
 		if matcheres := ts_regexp.FindStringSubmatch( r.URL.Path); matcheres != nil {
-			applog.Println("In ts handling")
 			d_type := matcheres[1]
 			url := matcheres[2]
 			w.Header().Set("Content-Type", "video/MP2T")
@@ -310,7 +310,7 @@ func main() {
 			io.CopyBuffer(w, resp.Body, buf)
 
 		} else if matchres := channel_regexp.FindStringSubmatch(r.URL.Path) ; matchres!=nil{
-			applog.Println("In m3u8 handling")
+
 			client := &http.Client{}
 			if matchres[4] == "" { 
 				name := matchres[2]
@@ -329,7 +329,6 @@ func main() {
 					req_str = fmt.Sprintf("https://linear-abematv.akamaized.net/%s/%s/playlist.m3u8",v_type, name)
 	
 				}
-				applog.Println("Req str",req_str)
 				req, _ := http.NewRequest("GET", req_str, nil)
 				if *USING_JAPAN_IP {
 					req.Header.Add("X-Forwarded-For", JAPAN_IP)
@@ -341,7 +340,6 @@ func main() {
 				return
 				//no quality
 			} else {
-				applog.Println("having quality!!!")
 				name := matchres[2]
 				v_type := matchres[1]
 				quality := matchres[4]
@@ -380,7 +378,6 @@ func main() {
 			http.Redirect(w, r, redirecturl, http.StatusFound)
 			return
 		} else {
-			applog.Println("nothing matches")
 			return
 		}
 	})
@@ -454,7 +451,6 @@ func main() {
 			return
 		}
 		redirecturl := change_relative_regxp.ReplaceAllString(episode.Playback.Hls, `$2`)
-		applog.Println("ep hls",episode.Playback.Hls)
 		http.Redirect(w, r, redirecturl, http.StatusFound) // like /program/%s/playlist.m3u8
 
 	})

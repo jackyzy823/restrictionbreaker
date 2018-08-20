@@ -32,7 +32,7 @@ def _urlsafe_b64encode(_str):
 #dependencied: struct
 def _to_bigint_array(key):
     res = sum([  "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz".find(key[i]) * (58 ** (len(key) -1 - i)) for i in range(len(key)) ])
-    if res > 2*128:
+    if res > 2**128:
         return struct.pack('>QQQQ',res >> 192, (res>>128 ) & 0xffffffffffffffff ,(res>>64)& 0xffffffffffffffff ,res & 0xffffffffffffffff )
     else:
         return struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
@@ -46,6 +46,69 @@ def _to_bigint128_array(key):
     return struct.pack('>QQ',res >> 64 ,res & 0xffffffffffffffff )
 
 
+class Abema(object):
+    """docstring for Abema"""
+    def __init__(self, token = None):
+        super(Abema, self).__init__()
+        if token:
+            self.usertoken = token
+            token_json = _urlsafe_b64decode( token.split(".")[1] )
+            self.userid = token_json["sub"]
+            self.deviceid = token_json["dev"]
+        else:
+            (self.userid,self.deviceid,self.usertoken) = generateUserInfo()
+            
+    @staticmethod
+    def generateApplicationKeySecret(deviceid, _time = None):
+        if _time == None:
+            ts_1hour = (int(time.time())+ 60*60 ) // 3600*3600  # plus 1 hour and drop minute and secs
+        else:
+            ts_1hour = (int(_time)+ 60*60 ) // 3600*3600  # plus 1 hour and drop minute and secs
+
+        time_struct = time.gmtime(ts_1hour)   
+
+        secretkey = "v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe"
+
+        h = hmac.new(secretkey,digestmod=hashlib.sha256)
+        h.update(secretkey)
+        tmp = h.digest()
+        for i in range(time_struct.tm_mon):
+            h = hmac.new(secretkey,digestmod=hashlib.sha256)
+            h.update(tmp)
+            tmp = h.digest()
+        # step 2
+        h = hmac.new(secretkey,digestmod=hashlib.sha256)
+        h.update(_urlsafe_b64encode(tmp)+deviceid)
+        tmp = h.digest()
+        for i in range(time_struct.tm_mday % 5):
+            h = hmac.new(secretkey,digestmod=hashlib.sha256)
+            h.update(tmp)
+            tmp = h.digest()
+        #step 3
+        h = hmac.new(secretkey,digestmod=hashlib.sha256)
+        h.update(_urlsafe_b64encode(tmp)+  str(ts_1hour)) # no .0 
+        tmp = h.digest()
+
+        for i in range(time_struct.tm_hour  % 5): # should be utc hour!!!
+            h = hmac.new(secretkey,digestmod=hashlib.sha256) 
+            h.update(tmp)
+            tmp = h.digest()
+
+        return _urlsafe_b64encode(tmp)
+
+
+    @staticmethod
+    def generateUserInfo():
+        deviceid = str(uuid.uuid4())
+        res = requests.post("https://api.abema.io/v1/users",json={"deviceId":deviceid,"applicationKeySecret":generateApplicationKeySecret(deviceid)})
+        usertoken = res.json()['token'] #for media bearer 
+        # print usertoken
+        userid = res.json()['profile']["userId"]
+        return (userid,deviceid,usertoken)
+
+        
+
+
 
 # dependencies : time hmac hashlib base64.urlsafe_b64encode 
 
@@ -54,8 +117,12 @@ def _to_bigint128_array(key):
 #   URLSAFE -> + and / ->
 # Note: UTC time need
 # Note Java doFinal -> python 
-def generateApplicationKeySecret(deviceId):
-    ts_1hour = (int(time.time())+ 60*60 ) /3600*3600  # plus 1 hour and drop minute and secs
+def generateApplicationKeySecret(deviceid, _time = None):
+    if _time == None:
+        ts_1hour = (int(time.time())+ 60*60 ) // 3600*3600  # plus 1 hour and drop minute and secs
+    else:
+        ts_1hour = (int(_time)+ 60*60 ) // 3600*3600  # plus 1 hour and drop minute and secs
+
     time_struct = time.gmtime(ts_1hour)   
 
     secretkey = "v+Gjs=25Aw5erR!J8ZuvRrCx*rGswhB&qdHd_SYerEWdU&a?3DzN9BRbp5KwY4hEmcj5#fykMjJ=AuWz5GSMY-d@H7DMEh3M@9n2G552Us$$k9cD=3TxwWe86!x#Zyhe"
@@ -69,7 +136,7 @@ def generateApplicationKeySecret(deviceId):
         tmp = h.digest()
     # step 2
     h = hmac.new(secretkey,digestmod=hashlib.sha256)
-    h.update(_urlsafe_b64encode(tmp)+deviceId)
+    h.update(_urlsafe_b64encode(tmp)+deviceid)
     tmp = h.digest()
     for i in range(time_struct.tm_mday % 5):
         h = hmac.new(secretkey,digestmod=hashlib.sha256)
@@ -218,7 +285,7 @@ def getM3u8_pc(ticket,userid,usertoken):
     pass
 
 
-def getM3u8Key_android(ticket,deviceId,usertoken):
+def getM3u8Key_android(ticket,deviceid,usertoken):
     params = {"osName":"android","osVersion":"6.0.1","osLang":"ja_JP","osTimezone":"Asia/Tokyo","appId":"tv.abema",
                 "appVersion":"3.27.1" }  # TODO appVersion <----relates with ---> RC4KEY
     res = requests.get("https://api.abema.io/v1/media/token" ,params = params,headers={"Authorization" :"Bearer "+usertoken})
@@ -244,7 +311,7 @@ def getM3u8Key_android(ticket,deviceId,usertoken):
     # from RC4 dec(IV:DB98A8E7CECA3424D975280F90BD03EE data:D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB)
     # Crypto.Cipher.ARC4.new('DB98A8E7CECA3424D975280F90BD03EE'.decode('hex')).decrypt('D4B718BBBA9CFB7D0192A58F9E2D146AFC5DB29E4352DE05FC4CF2C1005804BB'.decode('hex')).encode('hex')
     # res: 3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E
-    h =hmac.new("3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E".decode("hex"),cid+deviceId ,digestmod=hashlib.sha256)
+    h =hmac.new("3AF0298C219469522A313570E8583005A642E73EDD58E3EA2FB7339D3DF1597E".decode("hex"),cid+deviceid ,digestmod=hashlib.sha256)
     enckey = h.digest() #bin mode
     # print enckey.encode('hex')
     from Crypto.Cipher import AES
@@ -277,7 +344,12 @@ def generateUserInfo():
     # print usertoken
     userid = res.json()['profile']["userId"]
     return (userid,deviceid,usertoken)
-    
+
+def refreshUserInfo(userid,usertoken):
+    resp = requests.get("https://api.abema.io/v1/users/{0}".format(userid), headers={"Authorization" :"Bearer "+usertoken})
+    return resp.status_code == 200
+
+
 def processUrl(link):
     (userid,deviceid,usertoken) = generateUserInfo()
     if link.endswith(".mpd"):
@@ -289,8 +361,18 @@ def processUrl(link):
         getM3u8Key(link,deviceid,userid,usertoken)
 
 
-processUrl("https://linear-abematv.akamaized.net/channel/abema-special/manifest.mpd")
-processUrl("https://linear-abematv.akamaized.net/channel/abema-news/1080/playlist.m3u8")
+if __name__ == '__main__':
+    # test : generateApplicationKeySecret
+    assert( 'JHdWjCPqtT4Eqc-NNUhGzO-ndGSBLojb0JNs_nJ85PI' == generateApplicationKeySecret('a8167a4f-71c6-492d-830f-e72a1d5baa11',1534728857.036203))
+    
+    # test: _to_bigint_array
+    assert( 'N\x03]*\x03S\x84~\xdcs\xc1\x17VrV\x8e' == _to_bigint128_array("Adjkljflvrv3kf4asasdad") )
+    assert( '\x8f"kQ\x1f\xc2\xb2\xdd\xc62!\x13x\xc3\xccNe\xd4\xcc\xf1s.\x7f\x9a\xf3\xa9\xe5wm\xf2V\x8e' == _to_bigint256_array("Adjkljflvrv3kf4asasdadAdjkljflvrv3kf4asasdad"))
+    assert( 'N\x03]*\x03S\x84~\xdcs\xc1\x17VrV\x8e' == _to_bigint_array("Adjkljflvrv3kf4asasdad") )
+    assert( '\x8f"kQ\x1f\xc2\xb2\xdd\xc62!\x13x\xc3\xccNe\xd4\xcc\xf1s.\x7f\x9a\xf3\xa9\xe5wm\xf2V\x8e' == _to_bigint_array("Adjkljflvrv3kf4asasdadAdjkljflvrv3kf4asasdad"))
+
+# processUrl("https://linear-abematv.akamaized.net/channel/abema-special/manifest.mpd")
+# processUrl("https://linear-abematv.akamaized.net/channel/abema-news/1080/playlist.m3u8")
 
 
 # for channel in requests.get("https://api.abema.io/v1/channels").json()["channels"]:

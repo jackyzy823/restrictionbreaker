@@ -42,6 +42,7 @@ https://google.github.io/shaka-packager/html/documentation.html#encryption-decry
 usage:
 packager-linux in=test.mp4,stream=video,output=dec.mp4 --enable_raw_key_decryption --keys label=VIDEO:key_id=c30e0b1f266a420c892ef18188c25db1:key=bff1cb66580c477bba992a6c4a291ffa
 
+because it can handle emsg!!!
 
 browser implement
 
