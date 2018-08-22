@@ -191,7 +191,7 @@ RESP
 
 11. VIDEO GENRES
 REQ `GET https://api.abema.io/v1/video/genres`
-
+HEADER: Authorization: Bearer userToken
 RESP
 ```json
 {
@@ -206,7 +206,7 @@ RESP
 ```
 11. VIDEO 
 REQ `GET https://api.abema.io/v1/video/featureGenres/<genre>/cards?limit=<20 for default>&next=<if more than limition next request with previous response's next>&onlyFree=true`
-
+HEADER: Authorization: Bearer userToken
 
 somefree: label{someFree: true}
 free: label{free: true}
@@ -228,11 +228,16 @@ next
     ]
 }
 
-12. 
+12. GET series and season
 REQ `GET https://api.abema.io/v1/video/series/<seriesId>`
-
+HEADER: Authorization: Bearer userToken
 
     version 
 
-13
+13.  GET programs in different seasons
 REQ `GET https://api.abema.io/v1/video/series/<seriesId>/programs?limit=20&offset=0&order=seq&seasonId=<seriesid_season>&seriesVersion=<version in 12>`
+
+season : None --> s0
+
+14. GET programinfo
+REQ `GET https://api.abema.io/v1/video/programs/<programid>`
