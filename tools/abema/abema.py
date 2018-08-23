@@ -381,7 +381,6 @@ def getM3u8Key(link,deviceid,userid,usertoken):
 def generateUserInfo():
     deviceid = str(uuid.uuid4())
     res = requests.post("https://api.abema.io/v1/users",json={"deviceId":deviceid,"applicationKeySecret":generateApplicationKeySecret(deviceid)})
-    print res.content
     usertoken = res.json()['token'] #for media bearer 
     # print usertoken
     userid = res.json()['profile']["userId"]
