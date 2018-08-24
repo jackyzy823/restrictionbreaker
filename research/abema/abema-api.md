@@ -233,11 +233,17 @@ REQ `GET https://api.abema.io/v1/video/series/<seriesId>`
 HEADER: Authorization: Bearer userToken
 
     version 
+    orderedSeasons and Seasons differ?
+    seasons:null situation
 
 13.  GET programs in different seasons
 REQ `GET https://api.abema.io/v1/video/series/<seriesId>/programs?limit=20&offset=0&order=seq&seasonId=<seriesid_season>&seriesVersion=<version in 12>`
 
-season : None --> s0
+limit & offset
+season : None --> s0 or ''
+mediaStatus -> drm related?
 
 14. GET programinfo
 REQ `GET https://api.abema.io/v1/video/programs/<programid>`
+
+season : None -> s0
