@@ -240,7 +240,7 @@ HEADER: Authorization: Bearer userToken
 REQ `GET https://api.abema.io/v1/video/series/<seriesId>/programs?limit=20&offset=0&order=seq&seasonId=<seriesid_season>&seriesVersion=<version in 12>`
 
 limit & offset
-season : None --> s0 or ''
+season : None --> s0 or '' (somethings s0 no result but '' has result !! os use '')
 mediaStatus -> drm related?
 
 14. GET programinfo

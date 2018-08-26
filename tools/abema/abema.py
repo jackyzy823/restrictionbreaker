@@ -362,19 +362,25 @@ def getM3u8Key_android(ticket,deviceid,usertoken):
     # print decKey.encode("hex")
     return decKey
 
-
+'''
+Not works 90-1072_s0_ ?dt=android&enc=pr -> X-ENC-PLAYREADY
+                        without --> sample video
+                        has dash ???
+90-509_s0_ 
+90-490_s0_p24
+'''
 def getM3u8Key(link,deviceid,userid,usertoken):
     m3u8 = requests.get(link,headers={"X-Forwarded-For":"1.0.16.0"}).content
     res = re.findall(r"abematv-license://(.*)\"",m3u8)
     if not res: #may not exists
-        return ''
+        return None
     ticket = res[0]
 
     key1 = getM3u8Key_android(ticket,deviceid,usertoken).encode('hex')
-    key2 =  getM3u8_pc(ticket,userid,usertoken).encode('hex')
-    assert(key1==key2)
-    print key2
-    return key2
+    # key2 =  getM3u8_pc(ticket,userid,usertoken).encode('hex')
+    # assert(key1==key2)
+    # print key2
+    return key1
     # return getM3u8_pc(ticket,userid,usertoken)
 
 

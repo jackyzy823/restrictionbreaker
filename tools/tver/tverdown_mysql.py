@@ -1,8 +1,8 @@
 import os
 import subprocess
 import time
-import sqlite3
 import json
+
 
 '''
 done = 0  not started
@@ -10,8 +10,28 @@ done = 1 finished
 done = -1 expired!
 done = -2 unchecked error
 '''
-db  =sqlite3.connect("db_tver.db",check_same_thread  =False)
-cur = db.cursor()
+# import sqlite3
+# db  =sqlite3.connect("db_tver.db",check_same_thread  =False)
+# cur = db.cursor()
+
+
+import sys
+import mysql.connector
+dbconfig = {
+    "user":"downloadinfo",
+    "password":"downloadinfo",
+    "host":"127.0.0.1",
+    "database":"downloadinfo"
+}
+
+db = None
+try:
+    db = mysql.connector.connect(**dbconfig)
+except mysql.connector.Error,ex:
+    sys.exit(err.errno)
+cur = db.cursor(buffered=True)
+
+
 last = None
 while True:
     cur.execute("select count(*) from tver where done = 0;");
@@ -22,7 +42,7 @@ while True:
         if svc == last:
             print "Only this site!!!!"
             time.sleep(60) #same site
-        cur.execute("select  `reference_id` , `service` , `player_id` , `name` , `title` , `subtitle` , `catchup_id` , `url` , `service_name` , `id` , `json` ,`rowid` from tver where `done`==0 and service = ? order by updated_at asc ;",(svc,));
+        cur.execute("select  `reference_id` , `service` , `player_id` , `name` , `title` , `subtitle` , `catchup_id` , `url` , `service_name` , `id` , `json` ,`rowid` from tver where `done` = 0 and service = %s order by updated_at asc ;",(svc,));
         i = cur.fetchone()
         if not i:
             continue
@@ -49,7 +69,7 @@ while True:
                 except Exception as e:
                     print str(e)
                     pass
-                cur.execute("update  tver set done=-2 where rowid = ?",(i[11],))
+                cur.execute("update  tver set done=-2 where rowid = %s;",(i[11],))
                 db.commit()                
                 continue
             else:
@@ -62,7 +82,7 @@ while True:
                     print "Retry uploading!!!!"
                     time.sleep(2*60+5)
             os.unlink("./{0}.mp4".format(filename))
-            cur.execute("update  tver set done=1 where rowid = ?",(i[11],))
+            cur.execute("update  tver set done=1 where rowid = %s;",(i[11],))
             db.commit()
             print "Upload to {0}:{1}/{2}".format(svc,dirname,filename)
         except Exception as e:
