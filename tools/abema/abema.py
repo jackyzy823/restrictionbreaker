@@ -344,7 +344,7 @@ def getM3u8Key_android(ticket,deviceid,usertoken):
 
     cid = res.json()['cid']
     key = res.json()['k']
-    print cid,
+    # print cid,
     # print key
     encdata = _to_bigint128_array(key)
 
@@ -364,7 +364,7 @@ def getM3u8Key_android(ticket,deviceid,usertoken):
 
 '''
 Not works 90-1072_s0_ ?dt=android&enc=pr -> X-ENC-PLAYREADY
-                        without --> sample video
+                        without --> sample video tsda
                         has dash ???
 90-509_s0_ 
 90-490_s0_p24

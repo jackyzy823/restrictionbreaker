@@ -8,7 +8,7 @@ s.headers.update({"Authorization":"Bearer "+usertoken ,"User-Agent":"Mozilla/5.0
 import json
 import sys
 
-from  backports.shutil_get_terminal_size import get_terminal_size
+# from  backports.shutil_get_terminal_size import get_terminal_size
 
 import sqlite3
 
@@ -35,6 +35,12 @@ cur.execute(
     `done`  INTEGER DEFAULT 0,
     `video_key` VARCHAR(32)
 );''')
+
+#done 0
+#    1  finished
+#   -1  expired
+#   -2  downloaderror?
+#   -3  has drm
 
 
 #abema.reality 1qazXSW@ Sh Bj Tk Kt Ngy
@@ -66,8 +72,8 @@ for genre in interested:
     for item in cards:
         #series scope
         seriesId = item['seriesId']
-        sys.stderr.write("\r{0:<{1}}".format(seriesId,get_terminal_size().columns))
-        sys.stderr.flush()
+        # sys.stderr.write("\r{0:<{1}}".format(seriesId,get_terminal_size().columns))
+        # sys.stderr.flush()
         title = item['title']
         caption = item.get('caption',None)
         if item["label"].get("someFree"):
@@ -94,8 +100,8 @@ for genre in interested:
         for odseason in orderedseasons:
             season_name = odseason["name"] #sub folder name
             season_id = odseason["id"]
-            sys.stderr.write("\r{0:<{1}}".format("{0},{1}".format(season_id,seriesId),get_terminal_size().columns))
-            sys.stderr.flush()
+            # sys.stderr.write("\r{0:<{1}}".format("{0},{1}".format(season_id,seriesId),get_terminal_size().columns))
+            # sys.stderr.flush()
             offset = 0
             programs = []
             while True:
@@ -107,8 +113,8 @@ for genre in interested:
                 programs += tmp_prgs
             for prg in programs:
                 prgid = prg["id"] #unique id
-                sys.stderr.write("\r{0:<{1}}".format("{0},{1},{2}".format(prgid,season_id,seriesId),get_terminal_size().columns))
-                sys.stderr.flush()
+                # sys.stderr.write("\r{0:<{1}}".format("{0},{1},{2}".format(prgid,season_id,seriesId),get_terminal_size().columns))
+                # sys.stderr.flush()
                 duration = prg["info"]["duration"]
 
                 credit = json.dumps(prg["credit"]) #json {cast,released,copyrights,crews}
@@ -125,9 +131,12 @@ for genre in interested:
                 transcodeVersion = prg["transcodeVersion"]
                 respj = s.get("https://api.abema.io/v1/video/programs/{0}".format(prgid)).json()
                 hls = respj["playback"]["hls"]
+                done = 0
+                if respj["playback"].get("dash",None):
+                    done = -3
                 # if get dash -> then hls may pr enc and sample video how to?
                 video_key = None
-                if prg_freeendat:
+                if prg_freeendat and done == 0 :
                     hls1080 = hls.split("/")
                     hls1080.insert(-1,"1080")
                     try:
@@ -138,8 +147,8 @@ for genre in interested:
 
                 try:
                     #OR IGNORE
-                    cur.execute("INSERT INTO abemavideo (`prg_id`, `prg_title`, `series_id`, `series_title`  , `series_caption` , `series_content` , `season_id` , `season_title` , `genre`, `prg_content` , `prg_num`  , `prg_duration` , `prg_credit`  , `prg_endat`, `prg_freeendat` , `prg_url`,`video_key`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
-                    (prgid , prg_title , seriesId, series_title, caption, series_content, season_id ,season_name ,genre, prg_content,prg_num , duration, credit,endAt , prg_freeendat , hls ,video_key))
+                    cur.execute("INSERT INTO abemavideo (`prg_id`, `prg_title`, `series_id`, `series_title`  , `series_caption` , `series_content` , `season_id` , `season_title` , `genre`, `prg_content` , `prg_num`  , `prg_duration` , `prg_credit`  , `prg_endat`, `prg_freeendat` , `prg_url`,`video_key` ,`done`) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?);",
+                    (prgid , prg_title , seriesId, series_title, caption, series_content, season_id ,season_name ,genre, prg_content,prg_num , duration, credit,endAt , prg_freeendat , hls ,video_key ,done))
                     new_count +=1 # 
                 except sqlite3.IntegrityError as e:
                     if "UNIQUE" in e.args[0]:
@@ -152,11 +161,17 @@ for genre in interested:
                         # if old_freeendat != prg_freeendat:
                         # do not update freeend -> none , just let expried freendat exists. to check if it has been freed!
                         if video_key != '' and video_key is not None:
-                            cur.execute("update abemavideo set ``video_key` = ? where prg_id = ? " , (video_key,prgid))
+                            cur.execute("update abemavideo set `video_key` = %s where prg_id = %s ;" , (video_key,prgid))
                         if prg_freeendat is not None and prg_freeendat > old_freeendat:
-                            cur.execute("update abemavideo set `prg_freeendat` = ?  where prg_id = ? " , (prg_freeendat,prgid))
-                        if prg_endat is not None and prg_endat > old_end:
-                            cur.execute("update abemavideo set ,`prg_endat` = ? where prg_id = ? " , (endAt,prgid))
+                            print "Freeend  Longer! {0} from {1} ---> {2}".format(prgid,old_freeendat,prg_freeendat)
+                            cur.execute("update abemavideo set `prg_freeendat` = %s  where prg_id = %s ;" , (prg_freeendat,prgid))
+                        if endAt is not None and endAt > old_end:
+                            print "End      Longer! {0} from {1} ---> {2}".format(prgid,old_end,endAt)
+                            cur.execute("update abemavideo set `prg_endat` = %s where prg_id = %s ;" , (endAt,prgid))
+                        if endAt is not None and endAt < old_end:
+                            print "End      shortened! {0} from {1} ---> {2}".format(prgid,old_end,endAt)
+                        if prg_freeendat is not None and prg_freeendat < old_freeendat:
+                            print "Freeend  shortened! {0} from {1} ---> {2}".format(prgid,old_freeendat,prg_freeendat)
                         # db.commit()
                             # print "\nDiffer : {0} endAt {1} -> {2} free {3} -> {4}".format(prgid,old_end,endAt,old_freeendat,prg_freeendat)
                         # if prg_freeendat is not None and old_freeendat < prg_freeendat:

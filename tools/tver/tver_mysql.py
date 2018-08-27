@@ -34,7 +34,7 @@ dbconfig = {
 db = None
 try:
     db = mysql.connector.connect(**dbconfig)
-except mysql.connector.Error,ex:
+except mysql.connector.Error,err:
     sys.exit(err.errno)
 cur = db.cursor()
 
