@@ -187,9 +187,11 @@ for genre in interested:
                         if endAt is not None and endAt < old_end:
                             # those expired will not in json so what ever
                             print "End      shortened! {0} from {1} ---> {2}".format(prgid,old_end,endAt)
+                            cur.execute("update abemavideo set `prg_endat` = %s where prg_id = %s ;" , (endAt,prgid))
                         if prg_freeendat is not None and prg_freeendat < old_freeendat:
                             # those free expired will be None and not comparable and whatever
                             print "Freeend  shortened! {0} from {1} ---> {2}".format(prgid,old_freeendat,prg_freeendat)
+                            cur.execute("update abemavideo set `prg_freeendat` = %s  where prg_id = %s ;" , (prg_freeendat,prgid))
                         # db.commit()
                             # print "\nDiffer : {0} endAt {1} -> {2} free {3} -> {4}".format(prgid,old_end,endAt,old_freeendat,prg_freeendat)
                         # if prg_freeendat is not None and old_freeendat < prg_freeendat:
