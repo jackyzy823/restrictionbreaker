@@ -127,6 +127,7 @@ def parsePage(url):
 
         #PUBLISHERID (like 4f50810003) FOR CX 
         if len(publisher_id) == 4:
+            #sample 5645
             infoapi = "https://i.fod.fujitv.co.jp/plus7/web/{0}.html".format(publisher_id)
             resp = sess.get(infoapi)
 
@@ -137,24 +138,25 @@ def parsePage(url):
         # print "url for cx :{0}".format(url)
         #https://i.fod.fujitv.co.jp/plus7/web/ + publisher_id[0:4]+"/"+publisher_id+".html"
         #TODO & FIX: fod use now kind of url: https://i.fod.fujitv.co.jp/abr/pc_html5/<videoid>.m3u8 or https://i.fod.fujitv.co.jp/abr/pc_flash/<video>.m3u8
+        #if expired this url display nothing! so we need raw !
         try:
             name = re.findall(r'_wa\.parameters\[ \'title\' \] = \'(.*)\';',resp.content)[0].strip().decode('utf-8')
         except:
-            print "url for cx :{0},{1}".format(url,infoapi)
+            print "url for cx :{0},{1} name not found".format(url,infoapi)
             name = ""
 
+        mediaid = re.findall(r'mediaid=(.*?)\"',resp.content)[0]
 
-        meta = re.findall(r'else\s*?{\s*?meta = \'(.*?)\';',resp.content,re.S)[0]
-        if len(meta) == 0:
-            meta = 'me113'
-        m3u8 = re.findall(r'url: "(.*?)",',resp.content)[0].replace('" + meta + "',meta)
         if len(publisher_id)==4:
-            publisher_id = re.findall("([^/]*?)"+meta,m3u8)[0]
+            publisher_id = mediaid
+        assert(mediaid == publisher_id)
+        m3u8 = filter(lambda x : x.find("me113")!=-1 ,requests.get("https://i.fod.fujitv.co.jp/abr/pc_html5/{0}.m3u8".format(publisher_id)).content.split("\r\n"))[0]
+
         if len(subtitle) ==0:
             resp = sess.get("http://fod-sp.fujitv.co.jp/s/tver/redir.aspx?ser={0}".format(publisher_id))
             if resp.url.find("error")!=-1:
                 #for those pasts -> 
-                subtitle = publisherid[-4:]
+                subtitle = publisher_id[-4:]
             else:
                 subtitle = re.findall(r'''episode-title\">\s*?<h3>(.*?)</h3>''',resp.content)[0].replace('\xe3\x80\x90\xe7\x84\xa1\xe6\x96\x99\xe3\x81\xe3\x80\x91','').strip()
 
