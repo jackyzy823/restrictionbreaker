@@ -35,9 +35,33 @@ cur.execute(
     `done`  INTEGER DEFAULT 0,
     `video_key` VARCHAR(32)
 );''')
+'''mysql
+CREATE TABLE `downloadinfo`.`abemavideo` ( 
+ `prg_id` VARCHAR(255) NOT NULL ,
+ `prg_title` TEXT NOT NULL ,
+ `series_id` VARCHAR(255) NOT NULL ,
+ `series_title` TEXT NOT NULL ,
+ `series_caption` TEXT NULL ,
+ `series_content` TEXT NULL ,
+ `season_id` VARCHAR(255) NOT NULL ,
+ `season_title` TEXT NULL ,
+ `prg_content` TEXT NULL ,
+ `genre` VARCHAR(255) NOT NULL ,
+ `prg_num` INT NULL ,
+ `prg_duration` INT NULL ,
+ `prg_credit` JSON NULL ,
+ `prg_endat` INT NOT NULL ,
+ `prg_freeendat` INT NULL DEFAULT NULL ,
+ `prg_url` TEXT NOT NULL ,
+ `done` TINYTEXT NOT NULL ,
+ `video_key` VARCHAR(32) NULL DEFAULT NULL ,
+ `update_at` TIMESTAMP on update CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ,
+ PRIMARY KEY (`prg_id`)) ENGINE = InnoDB;
+ '''
 
 #done 0
 #    1  finished
+#    2 working?
 #   -1  expired
 #   -2  downloaderror?
 #   -3  has drm
@@ -54,15 +78,15 @@ if time < preg_freeendat  direct download and save video_key for `time > prg_fre
 '''
 
 genres = s.get("https://api.abema.io/v1/video/genres",headers = {"Authorization":"Bearer "+usertoken}).json()["genres"]
-interested = ['documentary', 'music' ,'reality','animation','drama','variety','movie' ] #
+interested = ['variety','movie','documentary', 'music' ,'reality','animation','drama' ] #
 new_count = 0
 
 for genre in interested:
-    print "\n",genre
+    print genre
     cards = []
     next_ = ''
     while True:
-        respj = s.get("https://api.abema.io/v1/video/featureGenres/{0}/cards?limit=20&next={1}&onlyFree=false".format(genre,next_)).json()
+        respj = s.get("https://api.abema.io/v1/video/featureGenres/{0}/cards?limit=100&next={1}&onlyFree=false".format(genre,next_)).json()
         cards += respj["cards"]
         if respj['paging'].get("next","") == '':
             break
@@ -104,12 +128,13 @@ for genre in interested:
             # sys.stderr.flush()
             offset = 0
             programs = []
+            _limit = 100
             while True:
-                resp = s.get("https://api.abema.io/v1/video/series/{0}/programs?limit=20&offset={1}&order=seq&seasonId={2}&seriesVersion={3}".format(seriesId,offset,season_id if season_name is not None else '',version))
+                resp = s.get("https://api.abema.io/v1/video/series/{0}/programs?limit={4}&offset={1}&order=seq&seasonId={2}&seriesVersion={3}".format(seriesId,offset,season_id if season_name is not None else '',version ,_limit))
                 tmp_prgs = resp.json()["programs"]
                 if len(tmp_prgs) == 0:
                     break
-                offset +=20
+                offset += _limit
                 programs += tmp_prgs
             for prg in programs:
                 prgid = prg["id"] #unique id

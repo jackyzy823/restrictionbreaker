@@ -1,5 +1,6 @@
 import requests
 import re
+sess = requests.session()
 
 # import sqlite3
 
@@ -102,7 +103,7 @@ def dbCommit(datatuple):
 
 
 def parsePage(url):
-    res = pagepattern.search(requests.get(url).content)
+    res = pagepattern.search(sess.get(url).content)
     if not res:
         raise ValueError(url)
     resdict = res.groupdict()
@@ -127,14 +128,15 @@ def parsePage(url):
         #PUBLISHERID (like 4f50810003) FOR CX 
         if len(publisher_id) == 4:
             infoapi = "https://i.fod.fujitv.co.jp/plus7/web/{0}.html".format(publisher_id)
-            resp = requests.get(infoapi)
+            resp = sess.get(infoapi)
 
         else:
             infoapi = "https://i.fod.fujitv.co.jp/plus7/web/{0}/{1}.html".format(publisher_id[0:4],publisher_id)
-            resp = requests.get(infoapi)
+            resp = sess.get(infoapi)
 
         # print "url for cx :{0}".format(url)
         #https://i.fod.fujitv.co.jp/plus7/web/ + publisher_id[0:4]+"/"+publisher_id+".html"
+        #TODO & FIX: fod use now kind of url: https://i.fod.fujitv.co.jp/abr/pc_html5/<videoid>.m3u8 or https://i.fod.fujitv.co.jp/abr/pc_flash/<video>.m3u8
         try:
             name = re.findall(r'_wa\.parameters\[ \'title\' \] = \'(.*)\';',resp.content)[0].strip().decode('utf-8')
         except:
@@ -149,7 +151,7 @@ def parsePage(url):
         if len(publisher_id)==4:
             publisher_id = re.findall("([^/]*?)"+meta,m3u8)[0]
         if len(subtitle) ==0:
-            resp = requests.get("http://fod-sp.fujitv.co.jp/s/tver/redir.aspx?ser={0}".format(publisher_id))
+            resp = sess.get("http://fod-sp.fujitv.co.jp/s/tver/redir.aspx?ser={0}".format(publisher_id))
             if resp.url.find("error")!=-1:
                 #for those pasts -> 
                 subtitle = publisherid[-4:]
@@ -181,7 +183,7 @@ def parsePage(url):
     player_key = resdict['player_key']
 
     infoapi = "https://players.brightcove.net/{0}/{1}_default/index.min.js".format(player_id,player_key)
-    res = policykeypattern.search(requests.get(infoapi).content)
+    res = policykeypattern.search(sess.get(infoapi).content)
     if not res:
         print infoapi
         policyKey = BCOV_POLICY[player_id]
@@ -191,7 +193,7 @@ def parsePage(url):
         policyKey = resdict['policyKey']
 
     playinfoapi = "https://edge.api.brightcove.com/playback/v1/accounts/{0}/videos/{1}".format(player_id,reference_id)
-    res = requests.get(playinfoapi,headers = {"X-Forwarded-For":"1.0.16.0","Accept":"application/json;pk={0}".format(policyKey)})
+    res = sess.get(playinfoapi,headers = {"X-Forwarded-For":"1.0.16.0","Accept":"application/json;pk={0}".format(policyKey)})
     resj = res.json()
     # import pdb;pdb.set_trace()
     return (reference_id,
@@ -222,7 +224,7 @@ def filter_finish(urls): #set
 
 def findAll():
     for url in ("/","/ranking", "/soon", "/drama", "/variety", "/documentary", "/anime", "/sport", "/other"):
-        page = requests.get("https://tver.jp{0}".format(url)).content
+        page = sess.get("https://tver.jp{0}".format(url)).content
         urls = linkPattern.findall(page)
         links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
         for i in links:
@@ -232,17 +234,10 @@ def findAll():
                 print str(e)
                 print i
 
-def updateJson():
-    cur.execute("select rowid,url from tver where done = -2 ; ")
-    res = cur.fetchall()
-    for i in res:
-        r = parsePage(i[1])
-        cur.execute("update tver set json=? ,done=0 where rowid= ?",(r[10],i[0]))
-    db.commit()
 
 def findAllByBrand():
     for svc in ("tbs","tx", "ex", "ntv", "cx", "ktv", "mbs", "abc", "ytv"):
-        page = requests.get("https://tver.jp/{0}".format(svc)).content
+        page = sess.get("https://tver.jp/{0}".format(svc)).content
         urls = linkPattern.findall(page)
         links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
         for i in links:
@@ -253,5 +248,11 @@ def findAllByBrand():
                 print i
 
 findAll()
+cur.execute("select count(*) from tver where done=0 limit 1;")
+res = cur.fetchone()
+print "New task:",res[0]
 findAllByBrand()
+cur.execute("select count(*) from tver where done=0 limit 1;")
+res = cur.fetchone()
+print "New task:",res[0]
 # updateJson()

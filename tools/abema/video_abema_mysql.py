@@ -5,6 +5,13 @@ import requests
 s = requests.session()
 s.headers.update({"Authorization":"Bearer "+usertoken ,"User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36",})
 
+from requests.adapters import HTTPAdapter
+adapter = HTTPAdapter(pool_maxsize=200)
+s.mount("http://", adapter)
+s.mount("https://", adapter)
+from multiprocessing.dummy import Pool
+p = Pool(50)
+
 import json
 import sys
 
@@ -64,8 +71,8 @@ cur = db.cursor(buffered=True)
 
 '''
 if time > prg_endat , you can do nothing
-if prg_endat > time > prg_freeendat and has video_key still can download by passing videokey  or premium
-if time < preg_freeendat  direct download and save video_key for `time > prg_freeendat`
+if prg_endat > time > prg_freeendat and has video_key still can download by passing video_key  or premium
+if time < prg_freeendat  direct download and save video_key for `time > prg_freeendat`
  
 '''
 
@@ -73,12 +80,47 @@ if time < preg_freeendat  direct download and save video_key for `time > prg_fre
 interested = ['documentary', 'music' ,'reality','animation','drama','variety','movie' ] #
 new_count = 0
 
+def test(prg):
+    prgid = prg["id"] #unique id
+    # sys.stderr.write("\r{0:<{1}}".format("{0},{1},{2}".format(prgid,season_id,seriesId),get_terminal_size().columns))
+    # sys.stderr.flush()
+    duration = prg["info"]["duration"]
+
+    credit = json.dumps(prg["credit"]) #json {cast,released,copyrights,crews}
+    endAt = int(prg["endAt"])
+    #TODO label is episode free
+    if prg["label"].get("free"):
+        prg_freeendat = int(prg["freeEndAt"])
+    else:
+        prg_freeendat = None
+    # if label -> free:true ->  prg["freeEndAt"]
+    prg_title = prg["episode"]["title"] # filename
+    prg_content = prg["episode"]["content"]
+    prg_num = prg["episode"]["number"]
+    transcodeVersion = prg["transcodeVersion"]
+    respj = s.get("https://api.abema.io/v1/video/programs/{0}".format(prgid)).json()
+    hls = respj["playback"]["hls"]
+    done = 0
+    if respj["playback"].get("dash",None):
+        done = -3
+    # if get dash -> then hls may pr enc and sample video how to?
+    video_key = None
+    if prg_freeendat and done == 0 :
+        hls1080 = hls.split("/")
+        hls1080.insert(-1,"1080")
+        try:
+            video_key = getM3u8Key("/".join(hls1080),deviceid,userid,usertoken )
+        except:
+            #those need pr in hls or expired?
+            pass
+    return (prgid,prg_title,prg_content,duration,credit,endAt,prg_freeendat,prg_num,hls,video_key,done)
+
 for genre in interested:
     print "\n",genre
     cards = []
     next_ = ''
     while True:
-        respj = s.get("https://api.abema.io/v1/video/featureGenres/{0}/cards?limit=20&next={1}&onlyFree=false".format(genre,next_)).json()
+        respj = s.get("https://api.abema.io/v1/video/featureGenres/{0}/cards?limit=100&next={1}&onlyFree=false".format(genre,next_)).json()
         cards += respj["cards"]
         if respj['paging'].get("next","") == '':
             break
@@ -120,47 +162,17 @@ for genre in interested:
             # sys.stderr.flush()
             offset = 0
             programs = []
+            _limit = 100
             while True:
-                resp = s.get("https://api.abema.io/v1/video/series/{0}/programs?limit=20&offset={1}&order=seq&seasonId={2}&seriesVersion={3}".format(seriesId,offset,season_id if season_name is not None else '',version))
+                resp = s.get("https://api.abema.io/v1/video/series/{0}/programs?limit={4}&offset={1}&order=seq&seasonId={2}&seriesVersion={3}".format(seriesId,offset,season_id if season_name is not None else '',version , _limit))
                 tmp_prgs = resp.json()["programs"]
                 if len(tmp_prgs) == 0:
                     break
-                offset +=20
+                offset += 100
                 programs += tmp_prgs
-            for prg in programs:
-                prgid = prg["id"] #unique id
-                # sys.stderr.write("\r{0:<{1}}".format("{0},{1},{2}".format(prgid,season_id,seriesId),get_terminal_size().columns))
-                # sys.stderr.flush()
-                duration = prg["info"]["duration"]
-
-                credit = json.dumps(prg["credit"]) #json {cast,released,copyrights,crews}
-                endAt = int(prg["endAt"])
-                #TODO label is episode free
-                if prg["label"].get("free"):
-                    prg_freeendat = int(prg["freeEndAt"])
-                else:
-                    prg_freeendat = None
-                # if label -> free:true ->  prg["freeEndAt"]
-                prg_title = prg["episode"]["title"] # filename
-                prg_content = prg["episode"]["content"]
-                prg_num = prg["episode"]["number"]
-                transcodeVersion = prg["transcodeVersion"]
-                respj = s.get("https://api.abema.io/v1/video/programs/{0}".format(prgid)).json()
-                hls = respj["playback"]["hls"]
-                done = 0
-                if respj["playback"].get("dash",None):
-                    done = -3
-                # if get dash -> then hls may pr enc and sample video how to?
-                video_key = None
-                if prg_freeendat and done == 0 :
-                    hls1080 = hls.split("/")
-                    hls1080.insert(-1,"1080")
-                    try:
-                        video_key = getM3u8Key("/".join(hls1080),deviceid,userid,usertoken )
-                    except:
-                        #those need pr in hls or expired?
-                        pass
-
+            ress = p.map(test , programs)
+            for res in ress:
+                (prgid,prg_title,prg_content,duration,credit,endAt,prg_freeendat,prg_num,hls,video_key,done)  = res
                 try:
                     #OR IGNORE
                     cur.execute("INSERT INTO abemavideo (`prg_id`, `prg_title`, `series_id`, `series_title`  , `series_caption` , `series_content` , `season_id` , `season_title` , `genre`, `prg_content` , `prg_num`  , `prg_duration` , `prg_credit`  , `prg_endat`, `prg_freeendat` , `prg_url`,`video_key` ,`done`) values (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s);",
@@ -192,19 +204,11 @@ for genre in interested:
                             # those free expired will be None and not comparable and whatever
                             print "Freeend  shortened! {0} from {1} ---> {2}".format(prgid,old_freeendat,prg_freeendat)
                             cur.execute("update abemavideo set `prg_freeendat` = %s  where prg_id = %s ;" , (prg_freeendat,prgid))
-                        # db.commit()
-                            # print "\nDiffer : {0} endAt {1} -> {2} free {3} -> {4}".format(prgid,old_end,endAt,old_freeendat,prg_freeendat)
-                        # if prg_freeendat is not None and old_freeendat < prg_freeendat:
-                        #     #if old_freeendat is None also <
-                        #     cur.execute("update abemavideo set `prg_freeendat` = ? ,`prg_endat` = ?  where prg_id = ? " , (prg_freeendat,endAt,prgid))
-                        #     db.commit()
-                        #     print "Update {0} from {1} to {2}".format(prgid,old_freeendat,prg_freeendat)
-                        # elif old_freeendat is not None and  prg_freeendat is None:
-                        #     print ""
                     else:
                         raise e
                 finally:
                     db.commit()
+
 print "\nNew items count:{0}".format(new_count)
                 #other format playback?
 '''db struct1
