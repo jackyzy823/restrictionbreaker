@@ -1,7 +1,10 @@
 import requests
 import re
 sess = requests.session()
-
+from requests.adapters import HTTPAdapter
+adapter = HTTPAdapter(pool_maxsize=200,max_retries=5) # max retry for cx connectionerror
+sess.mount("http://", adapter)
+sess.mount("https://", adapter)
 # import sqlite3
 
 # db  =sqlite3.connect("db_tver.db",check_same_thread  =False)
@@ -225,36 +228,82 @@ def filter_finish(urls): #set
     # return urls - set(m_url)
 
 def findAll():
+    count = 0
     for url in ("/","/ranking", "/soon", "/drama", "/variety", "/documentary", "/anime", "/sport", "/other"):
         page = sess.get("https://tver.jp{0}".format(url)).content
         urls = linkPattern.findall(page)
         links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
+        count+=len(links)
         for i in links:
             try:
                 dbCommit(parsePage(i))
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 print str(e)
                 print i
-
+    return count
 
 def findAllByBrand():
+    count = 0
     for svc in ("tbs","tx", "ex", "ntv", "cx", "ktv", "mbs", "abc", "ytv"):
         page = sess.get("https://tver.jp/{0}".format(svc)).content
         urls = linkPattern.findall(page)
         links = filter_finish(set(map(lambda x : "https://tver.jp{0}".format(filter (lambda y:y ,x)[0]) ,urls))) #without right /
+        count += len(links)
         for i in links:
             try:
                 dbCommit(parsePage(i))
             except Exception as e:
+                import traceback
+                traceback.print_exc()
                 print str(e)
                 print i
+    return count
 
-findAll()
+def findAllBySitemap():
+    def lp2url(lp):
+        try:
+            page = sess.get(lp).content
+            res = re.search(r'location\.href="(.*)"',page).groups()[0]
+            return "http://tver.jp{0}".format(res)
+        except:
+            print "err lp:{0}".format(lp)
+            return ""
+
+    import lxml.etree as et
+    from multiprocessing.dummy import Pool
+    sm =  et.fromstring( sess.get("https://tver.jp/sitemap.xml").content )
+    tverurls = [ i.find('./loc',namespaces=sm.nsmap).text for i in sm.findall('./url',namespaces=sm.nsmap)][1:] #jump index
+    lp = filter( lambda x: x.find("/lp/") != -1 , tverurls ) 
+    p = Pool(50)
+    lurls = p.map(lp2url,lp)
+    urls = filter( lambda x: all( map(lambda y:  x.find(y) == -1,["/lp/","/talent/","/ranking/","/soon/","/search/","/mylist/","/topics/","/info/"] ) ) , tverurls ) 
+
+    print set(lurls) - set(urls)
+    for i in set(urls) | set(lurls):
+        try:
+            dbCommit(parsePage(i))
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
+            print str(e)
+            print i
+    return len(set(urls) | set(lurls))
+
+
+res = findAll()
+print "Category->pages: {0}",res
 cur.execute("select count(*) from tver where done=0 limit 1;")
 res = cur.fetchone()
 print "New task:",res[0]
-findAllByBrand()
+res = findAllByBrand()
+print "Brand->pages: {0}",res
 cur.execute("select count(*) from tver where done=0 limit 1;")
 res = cur.fetchone()
 print "New task:",res[0]
-# updateJson()
+res = findAllBySitemap()
+print "Sitemap->pages: {0}",res
+cur.execute("select count(*) from tver where done=0 limit 1;")
+res = cur.fetchone()
+print "New task:",res[0]

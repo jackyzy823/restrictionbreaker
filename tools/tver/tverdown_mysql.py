@@ -35,8 +35,11 @@ cur = db.cursor(buffered=True)
 last = None
 while True:
     cur.execute("select count(*) from tver where done = 0;");
-    cnt = cur.fetchone()[0];
+    cnt = cur.fetchone()[0]
     if cnt == 0:
+        cur.execute("select count(*) from tver where done = -2;");
+        cnt = cur.fetchone()[0]
+        print "Error status count:{0}".format(cnt)
         break
     for svc in ("tbs","tx", "ex", "ntv", "cx", "ktv", "mbs", "abc", "ytv"):
         if svc == last:

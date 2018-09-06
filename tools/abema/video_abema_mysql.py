@@ -6,7 +6,7 @@ s = requests.session()
 s.headers.update({"Authorization":"Bearer "+usertoken ,"User-Agent":"Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.99 Safari/537.36",})
 
 from requests.adapters import HTTPAdapter
-adapter = HTTPAdapter(pool_maxsize=200)
+adapter = HTTPAdapter(pool_maxsize=200,max_retries=5)
 s.mount("http://", adapter)
 s.mount("https://", adapter)
 from multiprocessing.dummy import Pool
