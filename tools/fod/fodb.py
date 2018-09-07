@@ -1,4 +1,34 @@
 import requests
+import lxml.etree as et
+sm = et.fromstring(requests.get('http://fod.fujitv.co.jp/sitemap.xml').content)
+fodurls = [ i.find('./loc',namespaces=sm.nsmap).text for i in sm.findall('./url',namespaces=sm.nsmap)]
+
+#fod__program
+'''
+episode_entry : count_of_episodes
+genre -> multi_array ? or genre in sitemap
+program_cast -> string 
+program_id primary
+program_img_url
+program_info
+program_overview: introduction
+program_staff:
+program_title:
+
+episodes:
+'''
+#fod__episode
+'''
+display_order 
+end_day 
+episode_img_url
+episode_time
+episode_story introduction
+productid
+sub_title
+icon_ free/addnew/freetalk/new/premiere ?
+'''
+
 from pyquery import PyQuery as pq
 import sqlite3
 import re
