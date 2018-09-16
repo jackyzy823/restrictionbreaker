@@ -78,7 +78,7 @@ while True:
             else:
                 print "Download finished. Start uploading!"
             while True:
-                ret2 = subprocess.call(["./deps/rclone/rclone","--config","./deps/rclone/rclone.conf","--ignore-existing","--tpslimit" ,"1","copy","./{0}.mp4".format(filename),"{0}:{1}".format(svc,dirname)])
+                ret2 = subprocess.call(["./deps/rclone/rclone","--config","./deps/rclone/rclone.conf","--size-only","--tpslimit" ,"1","copy","./{0}.mp4".format(filename),"{0}:{1}".format(svc,dirname)])
                 if ret2 == 0:
                     break
                 else:
