@@ -199,17 +199,17 @@ for genre in interested:
                         if prg_credit!=old_prg_credit:
                             cur.execute("update abemavideo set `prg_credit` = %s where prg_id = %s ;" , (prg_credit,prg_id))
 
+                        if genre != old_genre:
+                            cur.execute("update abemavideo set `genre` = %s where prg_id = %s ;" , (genre,prg_id))
+                        if prg_title != old_prg_title:
+                            cur.execute("update abemavideo set `prg_title` = %s where prg_id = %s ;" , (prg_title,prg_id))
+                        if series_title != old_series_title:
+                            cur.execute("update abemavideo set `series_title` = %s where prg_id = %s ;" , (series_title,prg_id))
+                        if season_title != old_season_title:
+                            cur.execute("update abemavideo set `season_title` = %s where prg_id = %s ;" , (season_title,prg_id))
+                        
                         # genre (dst) prg_title (filename) series_title (folder) season_title (folder)
-                        if old_done != 1 or old_done!=2: # not downloaded  or not currentdownloading
-                            if genre != old_genre:
-                                cur.execute("update abemavideo set `genre` = %s where prg_id = %s ;" , (genre,prg_id))
-                            if prg_title != old_prg_title:
-                                cur.execute("update abemavideo set `prg_title` = %s where prg_id = %s ;" , (prg_title,prg_id))
-                            if series_title != old_series_title:
-                                cur.execute("update abemavideo set `series_title` = %s where prg_id = %s ;" , (series_title,prg_id))
-                            if season_title != old_season_title:
-                                cur.execute("update abemavideo set `season_title` = %s where prg_id = %s ;" , (season_title,prg_id))
-                        else: #already downloaded /current downloading
+                        if old_done == 1 or old_done==2: #  downloaded  or  currentdownloading
                             if old_season_title :
                                 old_filepath = old_series_title.strip().encode("utf-8").replace("/","／")+"/"+ old_season_title.strip().encode("utf-8").replace("/","／")+"/"+old_prg_title.strip().encode("utf-8").replace("/","／")
                             else:

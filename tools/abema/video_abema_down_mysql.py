@@ -39,7 +39,7 @@ last = None
 dynamic_day = 1
 while True:
     starttime = int(time.time())
-    cur.execute("select count(*) from abemavideo where done = 0 and prg_freeendat > %s and prg_freeendat is not null and prg_freeendat < %s  ;",(starttime,starttime +dynamic_day * 24 * 60 *60))
+    cur.execute("select count(*) from abemavideo where (done = 0 or done = 2) and prg_freeendat > %s and prg_freeendat is not null and prg_freeendat < %s  ;",(starttime,starttime +dynamic_day * 24 * 60 *60))
     cnt = cur.fetchone()[0];
     if cnt == 0:
         print "no content in {0} days".format(dynamic_day)
@@ -81,8 +81,8 @@ while True:
                 os.unlink("./{0}.mp4".format(filename))
             except Exception as e:
                 print str(e)
-            # cur.execute("update abemavideo set done=-2 where prg_id = %s;",(i[0],))
-            # db.commit()                
+            cur.execute("update abemavideo set done=0 where prg_id = %s;",(i[0],))
+            db.commit()                
             continue
         else:
             print "Download finished. Start uploading!"
