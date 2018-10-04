@@ -16,6 +16,28 @@ p = Pool(50)
 import json
 import sys
 
+def convert(inp):
+    tbl = {
+        u'\\': u'＼',
+        u'*':  u'＊',
+        u'<':  u'＜',
+        u'>':  u'＞',
+        u'?':  u'？',
+        u':':  u'：',
+        u'|':  u'｜',
+        u'#':  u'＃',
+        u'%':  u'％',
+        u'"':  u'＂',
+        # u'.':  u'．', 
+        # u'~':  u'～', 
+        # u' ':  u'␠',
+        u'/':  u'／'}
+    if inp is None:
+        return inp
+    for i in tbl.iteritems():
+        inp = inp.replace(i[0],i[1])
+    return inp
+
 # from  backports.shutil_get_terminal_size import get_terminal_size
 
 # import sqlite3
@@ -106,18 +128,20 @@ def test(prg):
         done = -3
     # if get dash -> then hls may pr enc and sample video how to?
     video_key = None
-    if prg_freeendat and done == 0 :
-        hls1080 = hls.split("/")
-        hls1080.insert(-1,"1080")
-        try:
-            video_key = getM3u8Key("/".join(hls1080),deviceid,userid,usertoken )
-        except:
-            #those need pr in hls or expired?
-            pass
+    ## do not get videokey here
+    # if prg_freeendat and done == 0 :
+    #     hls1080 = hls.split("/")
+    #     hls1080.insert(-1,"1080")
+    #     try:
+    #         video_key = getM3u8Key("/".join(hls1080),deviceid,userid,usertoken )
+    #     except:
+    #         #those need pr in hls or expired?
+    #         pass
     return (prg_id,prg_title,prg_content,prg_duration,prg_credit,prg_endat,prg_freeendat,prg_num,hls,video_key,done)
 
 for genre in interested:
     print genre
+    sys.stdout.flush()
     cards = []
     next_ = ''
     while True:
@@ -185,6 +209,9 @@ for genre in interested:
                         cur.execute("SELECT `prg_id`, `prg_title`, `series_id`, `series_title`  , `series_caption` , `series_content` , `season_id` , `season_title` , `genre`, `prg_content` , `prg_num`  , `prg_duration` , `prg_credit`  , `prg_endat`, `prg_freeendat` ,`video_key` ,`done` FROM abemavideo where `prg_id` = %s limit 1;" ,(prg_id,) )
                         (old_prg_id,old_prg_title,old_series_id,old_series_title,old_series_caption,old_series_content,old_season_id ,old_season_title , old_genre, old_prg_content , old_prg_num ,old_prg_duration ,old_prg_credit , old_prg_endat,old_prg_freeendat,old_video_key,old_done) = cur.fetchone()
 
+                        ##TODO: get video key here
+                        #if old_video_key is None or old_video_key
+
                         #text stuffs
                         if series_caption != old_series_caption:
                             cur.execute("update abemavideo set `series_caption` = %s where prg_id = %s ;" , (series_caption,prg_id))
@@ -200,33 +227,40 @@ for genre in interested:
                             cur.execute("update abemavideo set `prg_credit` = %s where prg_id = %s ;" , (prg_credit,prg_id))
 
                         if genre != old_genre:
+                            print "Genre: {0} Old:{1} Status:{2}".format(prg_id,old_genre,old_done)
                             cur.execute("update abemavideo set `genre` = %s where prg_id = %s ;" , (genre,prg_id))
                         if prg_title != old_prg_title:
+                            print "Title: {0} Old:{1} Status:{2}".format(prg_id,old_prg_title.encode("utf-8","ignore"),old_done)
                             cur.execute("update abemavideo set `prg_title` = %s where prg_id = %s ;" , (prg_title,prg_id))
                         if series_title != old_series_title:
+                            print "Series: {0} Old:{1} Status:{2}".format(prg_id,old_series_title.encode("utf-8","ignore"),old_done)
                             cur.execute("update abemavideo set `series_title` = %s where prg_id = %s ;" , (series_title,prg_id))
                         if season_title != old_season_title:
+                            print "Season: {0} Old:{1} Status{2}".format(prg_id,old_season_title.encode("utf-8","ignore"),old_done)
                             cur.execute("update abemavideo set `season_title` = %s where prg_id = %s ;" , (season_title,prg_id))
                         
                         # genre (dst) prg_title (filename) series_title (folder) season_title (folder)
-                        if old_done == 1 or old_done==2: #  downloaded  or  currentdownloading
+                        if int(old_done) == 1 or int(old_done)==2: #  downloaded  or  currentdownloadin
+                            old_filepath = ''
+                            file_path = ''
                             if old_season_title :
-                                old_filepath = old_series_title.strip().encode("utf-8").replace("/","／")+"/"+ old_season_title.strip().encode("utf-8").replace("/","／")+"/"+old_prg_title.strip().encode("utf-8").replace("/","／")
+                                old_filepath = convert(old_series_title.strip())+"/"+ convert(old_season_title.strip())+"/"+convert(old_prg_title.strip())
                             else:
-                                old_filepath = old_series_title.strip().encode("utf-8").replace("/","／")+"/"+old_prg_title.strip().encode("utf-8").replace("/","／")
-
+                                old_filepath = convert(old_series_title.strip())+"/"+convert(old_prg_title.strip())
+                            old_filepath = old_filepath.encode('utf-8')
                             if season_title :
-                                filepath = series_title.strip().encode("utf-8").replace("/","／")+"/"+ season_title.strip().encode("utf-8").replace("/","／")+"/"+prg_title.strip().encode("utf-8").replace("/","／")
+                                filepath = convert(series_title.strip())+"/"+ convert(season_title.strip())+"/"+convert(prg_title.strip())
                             else:
-                                filepath = series_title.strip().encode("utf-8").replace("/","／")+"/"+prg_title.strip().encode("utf-8").replace("/","／")
-                            
+                                filepath = convert(series_title.strip())+"/"+ convert(prg_title.strip())
+                            filepath = filepath.encode('utf-8')
+
                             if genre != old_genre:
                                 print "Cross Move: 'abema_{0}:{1}.mp4' 'abema_{2}:{3}.mp4'".format(old_genre,old_filepath,genre,filepath)
                                 #move to different account!!!
-                            else:
-                                if filepath != old_filepath:
-                                    print "Simple Move: 'abema_{0}:{1}.mp4' 'abema_{2}:{3}.mp4'".format(old_genre,old_filepath,genre,filepath)
-                                #./rclone move --tpslimit 1 --ignore-existing --config ./rclone.conf  tver:fjt.mp4  tver:Fujita/Maiko.mp4
+                            elif filepath != old_filepath:
+                                #todo ./rclone --config abema.conf moveto 
+                                print "Simple Move: 'abema_{0}:{1}.mp4' 'abema_{2}:{3}.mp4'".format(old_genre,old_filepath,genre,filepath)
+ 
 
 
                         # if old_prg_freeendat != prg_freeendat:
@@ -252,6 +286,7 @@ for genre in interested:
                     else:
                         raise e
                 finally:
+                    sys.stdout.flush()
                     db.commit()
 
 print "New items count:{0}".format(new_count)
