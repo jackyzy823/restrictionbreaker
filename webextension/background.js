@@ -1,6 +1,12 @@
 const CHOSENIP = getRandomIp();
 console.log("Your IP:"+CHOSENIP+",You can change it by reload the extension if some site blocks this IP.");
 
+chrome.webRequest.onBeforeRequest.addListener(function(req){
+  return {
+    redirectUrl: req.url.replace("linear-abematv","vod-abematv")
+  }
+
+},{urls:["*://linear-abematv.akamaized.net/*"]},["blocking"])
 
 chrome.webRequest.onBeforeSendHeaders.addListener(function(req){
   req.requestHeaders = req.requestHeaders.filter(function(x){
